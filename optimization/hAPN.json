@@ -1,0 +1,31 @@
+{
+  "file_name": {
+      "_comment": "Please provide path to the file (.csv) where the data is stored (WARNING: data should be contained in the first row and the sheet should be named 'data')",
+      "file": "hAPN.csv"
+    },
+
+  "experiment_details":{
+    "_comment0": "E_0: the amount of init enzyme in microM, S_0: the (high) amount of init subtrate in microM (e.g., 400), S_1: the (low) amount of init subtrate in microM (e.g., 6.25)",
+    "E_0":        0.0005,
+    "S_0":        400.0,
+    "S_1":        6.25,
+    "_comment1": "h: time (in seconds) between two measurements, exp_last: time (in minutes) of the entire experiments (suggested time: no shorter than 15 minutes)",
+    "h":          8.0,
+    "exp_last":   15.0
+  },
+
+  "abc_details":{
+    "_comment2": "low_K_M and high_K_M: minimal and maximal value of K_M for searching",
+    "low_K_M":    0.0,
+    "high_K_M":   200.0,
+    "_comment3": "low_k_cat and high_k_cat: minimal and maximal value of k_cat for searching",
+    "low_k_cat":  0.0,
+    "high_k_cat": 100.0,
+    "_comment4": "N: number of samples in one run, No_sim: number of runs, points_prior: number of points for sampling from prior",
+    "N":          10000,
+    "No_sim":     100,
+    "points_prior": 1000
+  }
+
+
+}
