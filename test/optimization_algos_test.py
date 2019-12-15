@@ -9,7 +9,8 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
 from optimization.evolutionary_algorithm import EvolutionaryAlgorithm as EA
-from optimization.population_algorithm import MetropolisHastings, Powell, Evolutionary, PopLiFe, LikelihoodFreeInference
+from optimization.population_algorithm import MetropolisHastings, Powell, Evolutionary, PopLiFe, LikelihoodFreeInference, \
+    ReversiblePopLiFe, RevPopLiFe
 
 
 def MichaelisMenten(t, y, params):
@@ -140,14 +141,14 @@ if __name__ == '__main__':
     args = config2args(config)
 
     y_real_raw, t_real = load_data(args, 0)
-    # y_real = smooth_data(args, t_real, y_real_raw)
+    y_real = smooth_data(args, t_real, y_real_raw)
 
     # INIT
     bounds = [[0., 0], [100.*60, 200.]]
 
     pop_size = 100
 
-    num_epochs = 50
+    num_epochs = 30
 
     max_iter = 200
 
@@ -155,21 +156,22 @@ if __name__ == '__main__':
         (np.asarray([np.random.uniform(bounds[0][i], bounds[1][i], (pop_size, 1)) for i in range(len(bounds[0]))])), 1)
 
     cov_mat = np.eye(2, 2)
-    cov_mat[0, 0] *= 10. ** 2
-    cov_mat[1, 1] *= 5. ** 2
+    cov_mat[0, 0] *= 25. ** 2
+    cov_mat[1, 1] *= 10. ** 2
 
     epsilon = 0.0001
 
-    # SYNTHETIC DATA
     params = args2params(args, t_real, x0=x0, y0=[0.])
-    params['S_0'] = 100.
+
+    # # SYNTHETIC DATA
+    params['S_0'] = 200.
     params['k_cat'] = 40.5 * 60.
     params['K_M'] = 15.7
 
     _, y_real = solve_MichaelisMenten(params)
     print(params['k_cat'] / 60., params['K_M'])
 
-    algos = ['poplife'] #['powell', 'mh', 'ea']
+    algos = ['revpoplife'] #['revpoplife', 'powell', 'mh', 'ea']
 
     if 'powell' in algos:
         powell = Powell(fun=objective, x0=x0[[0],:], bounds=bounds, args=(params, y_real), max_iter=100)
@@ -190,7 +192,8 @@ if __name__ == '__main__':
         tic = time.time()
         params['cov'] = cov_mat
         mh = MetropolisHastings(objective, args=(params, y_real), x0=x0, burn_in_phase=50, num_epochs=100, bounds=([bounds[0][0], bounds[0][1]], [bounds[1][0], bounds[1][1]]) )
-        res, f_res = mh.sample(epsilon=.0005)
+        lf_mh = LikelihoodFreeInference(pop_algorithm=mh, num_epochs=num_epochs)
+        res, f_res = lf_mh.lf_inference(epsilon=epsilon)
         toc = time.time()
 
         plt.hexbin(res[:,0] / 60., res[:,1], gridsize=20)
@@ -221,8 +224,9 @@ if __name__ == '__main__':
 
     if 'poplife' in algos:
         params['cov'] = cov_mat
+        params['gaussian_prob'] = 0.0
         params['mixing_prob'] = 0.0
-        params['num_cutting_points'] = 4
+        params['num_cutting_points'] = 0
         params['CR'] = 0.9
         params['F'] = 0.5
 
@@ -231,7 +235,8 @@ if __name__ == '__main__':
                           mixing_proposal_type=None,
                           continuous_proposal_type=None,
                           differential_proposal_type='differential_evolution',
-                          population_size=pop_size)
+                          population_size=pop_size,
+                          elitism=.0)
         lf_poplife = LikelihoodFreeInference(pop_algorithm=poplife, num_epochs=num_epochs)
 
         tic = time.time()
@@ -244,4 +249,38 @@ if __name__ == '__main__':
         params['k_cat'] = np.mean(res[:, 0])
         params['K_M'] = np.mean(res[:, 1])
         print('Pop-LiFe: k_cat=', params['k_cat'] / 60., ' (', np.std(res[:, 0]) / 60., ') ', 'K_M=',
+              params['K_M'], ' (', np.std(res[:, 1]), ') ', 'time elapsed=', toc - tic)
+
+    if 'revpoplife' in algos:
+        params['cov'] = cov_mat
+        params['gaussian_prob'] = .0
+        params['mixing_prob'] = 0.0
+        params['num_cutting_points'] = 0
+        params['CR'] = 0.9
+        params['F'] = 1.
+        params['randomized_F'] = False
+
+        revpoplife = ReversiblePopLiFe(objective, args=(params, y_real), x0=x0, burn_in_phase=0, num_epochs=num_epochs,
+                                       bounds=([bounds[0][0], bounds[0][1]], [bounds[1][0], bounds[1][1]]),
+                                       population_size=pop_size,
+                                       elitism=0.,
+                                       de_proposal_type='de_times_3')
+                                       # de_proposal_type='proper_differential_3')
+                                       # de_proposal_type='antisymmetric_differential')
+        # revpoplife = RevPopLiFe(objective, args=(params, y_real), x0=x0, burn_in_phase=0, num_epochs=num_epochs,
+        #                                bounds=([bounds[0][0], bounds[0][1]], [bounds[1][0], bounds[1][1]]),
+        #                                population_size=pop_size,
+        #                                elitism=0.)
+        lf_poplife = LikelihoodFreeInference(pop_algorithm=revpoplife, num_epochs=num_epochs)
+
+        tic = time.time()
+        res, f = lf_poplife.lf_inference(epsilon=epsilon)
+        toc = time.time()
+
+        plt.hexbin(res[:, 0] / 60., res[:, 1], gridsize=20)
+        plt.show()
+
+        params['k_cat'] = np.mean(res[:, 0])
+        params['K_M'] = np.mean(res[:, 1])
+        print('Reversible Pop-LiFe: k_cat=', params['k_cat'] / 60., ' (', np.std(res[:, 0]) / 60., ') ', 'K_M=',
               params['K_M'], ' (', np.std(res[:, 1]), ') ', 'time elapsed=', toc - tic)

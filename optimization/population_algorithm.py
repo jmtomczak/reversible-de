@@ -1,8 +1,11 @@
 from collections import Set
+import os
+from datetime import datetime
 import numpy as np
 import scipy.optimize as opt
-from optimization.proposals import ContinuousProposal, MixingProposal, DifferentialProposal
-from optimization.selections import AcceptanceSelection, ProportionalSelection, LikelihoodFreeAcceptanceUniformSelection, LikelihoodFreeAcceptanceGreedySelection
+from optimization.proposals import ContinuousProposal, MixingProposal, DifferentialProposal, ProperDifferentialProposal
+from optimization.selections import AcceptanceSelection, ProportionalSelection, LikelihoodFreeAcceptanceUniformSelection, \
+    LikelihoodFreeAcceptanceGreedySelection, SelectBest, RevGreedy
 import matplotlib.pyplot as plt
 
 
@@ -19,6 +22,13 @@ class LikelihoodFreeInference(object):
             self.name = name
 
     def lf_inference(self, epsilon=0.1, save_figs_folder='../results/'):
+        directory_name =  save_figs_folder + '/' + self.name
+        if not os.path.exists(directory_name):
+            os.makedirs(directory_name)
+        else:
+            directory_name = directory_name + str(datetime.now())
+            os.makedirs(directory_name)
+
         x_sample = None
 
         while x_sample is None:
@@ -30,7 +40,7 @@ class LikelihoodFreeInference(object):
             f = self.pop_algorithm.evaluate_objective(x)
 
             for i in range(self.num_epochs):
-                x, f = self.pop_algorithm.step(x, f, epsilon)
+                x, f = self.pop_algorithm.step(x, f, epsilon=epsilon)
 
                 # save figs
                 if len(save_figs_folder) > 0:
@@ -38,7 +48,7 @@ class LikelihoodFreeInference(object):
                     plt.xlim(self.pop_algorithm.bounds[0][0], self.pop_algorithm.bounds[1][0] / 60.)
                     plt.ylim(self.pop_algorithm.bounds[0][1], self.pop_algorithm.bounds[1][1])
                     plt.colorbar()
-                    plt.savefig(save_figs_folder + '/' + self.name + '/' + str(i))
+                    plt.savefig(directory_name + '/' + str(i))
                     plt.close()
 
                 indices = f < epsilon
@@ -80,48 +90,32 @@ class PopulationAlgorithm(object):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class MetropolisHastings(PopulationAlgorithm):
-    def __init__(self, fun, args, x0, burn_in_phase = 0, num_epochs=100, bounds=(-np.infty, np.infty), objective_is_probability=False):
+    def __init__(self, fun, args, x0, burn_in_phase = 0, num_epochs=100, bounds=(-np.infty, np.infty),
+                 objective_is_probability=False, name='mh'):
         super().__init__(fun, args)
+        self.name = name
 
         self.proposal = ContinuousProposal(type='gaussian', bounds=bounds, params=self.params)
-        self.selection = AcceptanceSelection()
+        # self.selection = AcceptanceSelection()
+        self.selection = LikelihoodFreeAcceptanceUniformSelection()
 
         self.objective_is_probability = objective_is_probability
 
         self.x0 = x0
+        self.bounds = bounds
 
         self.burn_in_phase = burn_in_phase
         self.num_epochs = num_epochs
 
-    def sample(self, epsilon = 0.01):
-        x = self.x0.copy()
-        f = self.evaluate_objective(x)
+    def step(self, x, f, epsilon):
+        # Sample new points
+        x_new = self.proposal.sample(x)
+        f_new = self.evaluate_objective(x_new)
+        # MH acceptance rule
+        # x, f = self.selection.select(x, f, x_new, f_new, objective_is_probability=self.objective_is_probability)
+        x, f = self.selection.select(x, f, x_new, f_new, epsilon=epsilon)
 
-        x_sample = None
-        f_sample = None
-
-        for i in range(self.num_epochs):
-            # Sample new points
-            x_new = self.proposal.sample(x)
-            f_new = self.evaluate_objective(x_new)
-            # Transform them to unnormalized probabilities if necessary
-            # MH acceptance rule
-            x, f = self.selection.select(x, f, x_new, f_new, objective_is_probability=self.objective_is_probability)
-
-            if i > self.burn_in_phase:
-                indx = f < epsilon
-                if np.sum(indx) > 0:
-                    if x_sample is None:
-                        x_sample = x[indx]
-                        f_sample = f[indx]
-                    else:
-                        x_sample = np.concatenate((x_sample, x[indx]), 0)
-                        f_sample = np.concatenate((f_sample, f[indx]), 0)
-
-        if self.objective_is_probability is False:
-            f_sample = np.exp(-f_sample)
-
-        return x_sample, f_sample
+        return x, f
 
     def optimize(self):
         pass
@@ -215,7 +209,8 @@ class Powell(PopulationAlgorithm):
 class PopLiFe(PopulationAlgorithm):
     def __init__(self, fun, args, x0, burn_in_phase = 0, num_epochs=100, bounds=(-np.infty, np.infty),
                  objective_is_probability=False, continuous_proposal_type='gaussian',
-                 mixing_proposal_type='uniform', differential_proposal_type='differential_evolution', population_size=None):
+                 mixing_proposal_type='uniform', differential_proposal_type='differential_evolution',
+                 population_size=None, elitism=0.):
         super().__init__(fun, args)
 
         self.name = 'poplife'
@@ -225,6 +220,7 @@ class PopLiFe(PopulationAlgorithm):
         self.differential = DifferentialProposal(type=differential_proposal_type, bounds=bounds, params=self.params)
 
         self.selection = LikelihoodFreeAcceptanceGreedySelection()
+        self.best_selection = SelectBest()
 
         self.objective_is_probability = objective_is_probability
 
@@ -244,12 +240,123 @@ class PopLiFe(PopulationAlgorithm):
         # sample
         x_new = self.differential.sample(x)
         x_new = self.mixing.sample(x_new, prob=self.params['mixing_prob'])
-        x_new = self.proposal.sample(x_new)
+        x_new = self.proposal.sample(x_new, prob=self.params['gaussian_prob'])
 
         # evaluate
         f_new = self.evaluate_objective(x_new)
 
         # select
+        # x, f = self.best_selection.select(x_new, f_new, population_size=self.population_size)
         x, f = self.selection.select(x, f, x_new, f_new, epsilon=epsilon, population_size=self.population_size)
+
+        return x, f
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+class ReversiblePopLiFe(PopulationAlgorithm):
+    def __init__(self, fun, args, x0, burn_in_phase = 0, num_epochs=100, bounds=(-np.infty, np.infty),
+                 de_proposal_type='proper_differential_1',
+                 continuous_proposal_type='gaussian',
+                 population_size=None, elitism=0.):
+        super().__init__(fun, args)
+
+        self.name = 'revpoplife'
+
+        # self.differential = DifferentialProposal(type='reversible_evolution', bounds=bounds, params=self.params)
+        self.differential = ProperDifferentialProposal(type=de_proposal_type, bounds=bounds, params=self.params)
+        self.proposal = ContinuousProposal(type=continuous_proposal_type, bounds=bounds, params=self.params)
+
+        # self.selection = LikelihoodFreeAcceptanceGreedySelection()
+        self.selection = ProportionalSelection(elitism=elitism)
+        self.best_selection = SelectBest()
+
+        self.objective_is_probability = False
+
+        self.x0 = x0
+        self.bounds = bounds
+
+        if population_size is None:
+            self.population_size = self.x0.shape[0]
+        else:
+            self.population_size = population_size
+
+        self.burn_in_phase = burn_in_phase
+        self.num_epochs = num_epochs
+
+    def step(self, x, f, epsilon):
+
+        # sample
+        # if self.params['gaussian_prob'] > 0.:
+        #     x_1, x_2 = np.split(x, 2)
+        #     x_new_1 = self.differential.sample(x_1)
+        #     x_new_2 = self.proposal.sample(x_2, prob=self.params['gaussian_prob'])
+        #     x_new = np.concatenate((x_new_1, x_new_2), 0)
+        # else:
+        #     x_new = self.differential.sample(x)
+
+        #
+        x_new, _ = self.differential.sample(x)
+        if not(self.differential.type in ['proper_differential_1', 'proper_differential_1_dist', 'de_single']):
+            x_new = np.concatenate(x_new, 0)
+
+        if self.params['gaussian_prob'] > 0.:
+            x_new = np.concatenate((x_new, x), 0)
+            x_new = self.proposal.sample(x_new, prob=self.params['gaussian_prob'])
+            # evaluate
+            f_new = self.evaluate_objective(x_new)
+        else:
+            # evaluate only new points
+            f_new = self.evaluate_objective(x_new)
+            x_new = np.concatenate((x_new, x), 0)
+            f_new = np.concatenate((f_new, f))
+
+        # select
+        x, f = self.best_selection.select(x_new, f_new, population_size=self.population_size)
+        # x, f = self.selection.select(x, f, objective_is_probability=False, epsilon=np.infty, population_size=self.population_size)
+
+        return x, f
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+class RevPopLiFe(PopulationAlgorithm):
+    def __init__(self, fun, args, x0, burn_in_phase = 0, num_epochs=100, bounds=(-np.infty, np.infty),
+                 continuous_proposal_type='gaussian',
+                 population_size=None, elitism=0.):
+        super().__init__(fun, args)
+
+        self.name = 'revpoplife'
+
+        self.differential = ProperDifferentialProposal(bounds=bounds, params=self.params)
+        self.proposal = ContinuousProposal(type=continuous_proposal_type, bounds=bounds, params=self.params)
+
+        # self.selection = RevGreedy()
+        self.selection = SelectBest()
+
+        self.objective_is_probability = False
+
+        self.x0 = x0
+        self.bounds = bounds
+
+        if population_size is None:
+            self.population_size = self.x0.shape[0]
+        else:
+            self.population_size = population_size
+
+        self.burn_in_phase = burn_in_phase
+        self.num_epochs = num_epochs
+
+    def step(self, x, f, epsilon):
+
+        # sample
+        x_new, indices = self.differential.sample3(x)
+        # x_new = np.concatenate(x_new, 0)
+
+        # evaluate
+        f_new = self.evaluate_objective(x_new)
+
+        # select
+        # x, f = self.selection.select2(x, f, np.concatenate(x_new, 0), f_new)
+        x, f = self.selection.select(np.concatenate((x_new, x[indices]), 0), np.concatenate((f_new, f[indices]), 0),
+                                     population_size=self.population_size)
 
         return x, f

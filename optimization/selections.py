@@ -6,10 +6,12 @@ class Selection(object):
         assert (elitism >= 0.) and (elitism < 1.), 'Elitism must be in [0, 1).'
         self.elitism = elitism
 
-    def select_elite(self, x, f):
+    def select_elite(self, x, f, population_size=None):
         if self.elitism > 0.:
+            if population_size is None:
+                population_size = x.shape[0]
             indices_sort = np.argsort(f)
-            elite_indx = int(self.elitism * x.shape[0])
+            elite_indx = int(self.elitism * population_size)
             if elite_indx == 0:
                 elite_indx = 1
 
@@ -35,16 +37,16 @@ class ProportionalSelection(Selection):
     def __init__(self, elitism=0.):
         super().__init__(elitism=elitism)
 
-    def select(self, x, f, objective_is_probability, epsilon=np.infty, population_size=None):
+    def select(self, x, f, objective_is_probability, epsilon=np.infty, population_size=None, inv_temp=1.):
         if population_size is None:
             population_size = x.shape[0]
 
         # select an elite
-        x_rest, f_rest, x_elite, f_elite, elite_indx = self.select_elite(x, f)
+        x_rest, f_rest, x_elite, f_elite, elite_indx = self.select_elite(x, f, population_size=population_size)
 
         # calculate probability by using softmax
         if objective_is_probability is False:
-            exp_f_rest = np.exp(-f_rest)
+            exp_f_rest = np.exp(-inv_temp*f_rest)
         else:
             exp_f_rest = f_rest
         probability = exp_f_rest / np.sum(exp_f_rest)
@@ -163,12 +165,9 @@ class SelectBest(Selection):
     def __init__(self):
         super().__init__(elitism=0.)
 
-    def select(self, x_old, f_old, x_new, f_new, epsilon=np.infty, population_size=None):
+    def select(self, x, f, population_size=None):
         if population_size is None:
-            population_size = x_old.shape[0]
-
-        x = np.concatenate((x_old, x_new), 0)
-        f = np.concatenate((f_old, f_new), 0)
+            population_size = x.shape[0]
 
         indices = np.argsort(f)
 
@@ -176,3 +175,74 @@ class SelectBest(Selection):
         f_new = f[indices]
 
         return x_new[0:population_size], f_new[0:population_size]
+
+
+class RevGreedy(Selection):
+    def __init__(self):
+        super().__init__(elitism=0.)
+
+    def select(self, x, f, x_new, f_new, indices, population_size=None):
+        if population_size is None:
+            population_size = x.shape[0]
+
+        x_1 = x[indices[0]]
+        x_2 = x[indices[1]]
+        x_3 = x[indices[2]]
+
+        f_1 = f[indices[0]]
+        f_2 = f[indices[0]]
+        f_3 = f[indices[0]]
+
+        x_new_1 = x_new[0]
+        x_new_2 = x_new[1]
+        x_new_3 = x_new[2]
+
+        f_new_1 = f_new[0]
+        f_new_2 = f_new[1]
+        f_new_3 = f_new[2]
+
+        indx = (f_new_1 * f_new_2 * f_new_3) < (f_1 * f_2 * f_3)
+
+        y = np.concatenate((x_1[~indx], x_2[~indx], x_3[~indx]), 0)
+        f_y = np.concatenate((f_1[~indx], f_2[~indx], f_3[~indx]), 0)
+
+        z = np.concatenate((x_new_1[indx], x_new_2[indx], x_new_3[indx]), 0)
+        f_z = np.concatenate((f_new_1[indx], f_new_2[indx], f_new_3[indx]), 0)
+
+        x_cat = np.concatenate((y, z), 0)
+        f_cat = np.concatenate((f_y, f_z), 0)
+
+        # final greedy selection
+        indices_final = np.argsort(f_cat)
+
+        x_final = x_cat[indices_final]
+        f_final = f_cat[indices_final]
+
+        return x_final[0:population_size], f_final[0:population_size]
+
+    def select2(self, x, f, x_new, f_new):
+        x_1, x_2, x_3 = np.split(x, 3)
+        f_1, f_2, f_3 = np.split(f, 3)
+
+        x_new_1, x_new_2, x_new_3 = np.split(x_new, 3)
+        f_new_1, f_new_2, f_new_3 = np.split(f_new, 3)
+
+        indx = (f_new_1 * f_new_2 * f_new_3) < (f_1 * f_2 * f_3)
+
+        y = np.concatenate((x_1[~indx], x_2[~indx], x_3[~indx]), 0)
+        f_y = np.concatenate((f_1[~indx], f_2[~indx], f_3[~indx]), 0)
+
+        z = np.concatenate((x_new_1[indx], x_new_2[indx], x_new_3[indx]), 0)
+        f_z = np.concatenate((f_new_1[indx], f_new_2[indx], f_new_3[indx]), 0)
+
+        x_cat = np.concatenate((y, z), 0)
+        f_cat = np.concatenate((f_y, f_z), 0)
+
+        # final greedy selection
+        indices_final = np.argsort(f_cat)
+
+        x_final = x_cat[indices_final]
+        f_final = f_cat[indices_final]
+
+        return x_final, f_final
+        # return x_final[0:population_size], f_final[0:population_size]
