@@ -132,9 +132,13 @@ class ProperDifferentialProposal(Proposal):
             return (y_1, y_2), (indices_1, indices_2, indices_3)
 
         elif self.type == 'proper_differential_3':
+            # y_1 = np.clip(x_1 + self.F * (x_2 - x_3), self.bounds[0], self.bounds[1])
+            # y_2 = np.clip(x_2 + self.F * (y_1 - x_3), self.bounds[0], self.bounds[1])
+            # y_3 = np.clip(x_3 + self.F * (y_2 - y_1), self.bounds[0], self.bounds[1])
+
             y_1 = np.clip(x_1 + self.F * (x_2 - x_3), self.bounds[0], self.bounds[1])
-            y_2 = np.clip(x_2 + self.F * (y_1 - x_3), self.bounds[0], self.bounds[1])
-            y_3 = np.clip(x_3 + self.F * (y_2 - y_1), self.bounds[0], self.bounds[1])
+            y_2 = np.clip(x_2 + self.F * (x_3 - y_1), self.bounds[0], self.bounds[1])
+            y_3 = np.clip(x_3 + self.F * (y_1 - y_2), self.bounds[0], self.bounds[1])
 
             return (y_1, y_2, y_3), (indices_1, indices_2, indices_3)
 

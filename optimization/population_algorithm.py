@@ -21,13 +21,24 @@ class LikelihoodFreeInference(object):
         else:
             self.name = name
 
-    def lf_inference(self, epsilon=0.1, save_figs_folder='../results/'):
-        directory_name =  save_figs_folder + '/' + self.name
-        if not os.path.exists(directory_name):
-            os.makedirs(directory_name)
-        else:
-            directory_name = directory_name + str(datetime.now())
-            os.makedirs(directory_name)
+    def lf_inference(self, epsilon=0.1, save_figs_folder='../results/', specific_folder_name=None):
+        directory_name_org =  save_figs_folder + '/' + self.name
+        # if (not os.path.exists(directory_name) ):
+        #     if specific_folder_name is None:
+        #         specific_folder_name = str(datetime.now())
+        #     directory_name = directory_name + specific_folder_name
+        #     os.makedirs(directory_name)
+        # else:
+        #     if specific_folder_name is None:
+        #         specific_folder_name = str(datetime.now())
+        #     directory_name = directory_name + specific_folder_name
+        #     os.makedirs(directory_name)
+        if specific_folder_name is None:
+            specific_folder_name = str(datetime.now())
+        directory_name = directory_name_org + specific_folder_name
+        if os.path.exists(directory_name):
+            directory_name = directory_name_org + str(datetime.now())
+        os.makedirs(directory_name)
 
         x_sample = None
 
@@ -39,8 +50,13 @@ class LikelihoodFreeInference(object):
             x = self.pop_algorithm.x0.copy()
             f = self.pop_algorithm.evaluate_objective(x)
 
+            f_best_so_far = []
+            f_best_so_far.append(np.min(f))
+
             for i in range(self.num_epochs):
                 x, f = self.pop_algorithm.step(x, f, epsilon=epsilon)
+
+                f_best_so_far.append(np.min(f))
 
                 # save figs
                 if len(save_figs_folder) > 0:
@@ -64,6 +80,11 @@ class LikelihoodFreeInference(object):
 
         x_sample = np.unique(x_sample, axis=0)
         f_sample = np.unique(f_sample, axis=0)
+
+        plt.plot(np.arange(0,len(f_best_so_far)), np.array(f_best_so_far))
+        plt.grid()
+        plt.savefig(directory_name + '/' + 'best_f')
+        plt.close()
 
         return x_sample, f_sample
 

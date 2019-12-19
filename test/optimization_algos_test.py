@@ -148,9 +148,15 @@ if __name__ == '__main__':
 
     pop_size = 100
 
-    num_epochs = 30
+    num_epochs = 20
 
-    max_iter = 200
+    max_iter = 500
+
+    F = 0.5
+    # de_proposal_type = 'antisymmetric_differential'
+    # de_proposal_type = 'de_times_3'
+    de_proposal_type = 'proper_differential_3'
+    # de_proposal_type = 'proper_differential_1'
 
     x0 = np.concatenate(
         (np.asarray([np.random.uniform(bounds[0][i], bounds[1][i], (pop_size, 1)) for i in range(len(bounds[0]))])), 1)
@@ -167,6 +173,7 @@ if __name__ == '__main__':
     params['S_0'] = 200.
     params['k_cat'] = 40.5 * 60.
     params['K_M'] = 15.7
+    params['pop_size'] = pop_size
 
     _, y_real = solve_MichaelisMenten(params)
     print(params['k_cat'] / 60., params['K_M'])
@@ -177,10 +184,15 @@ if __name__ == '__main__':
         powell = Powell(fun=objective, x0=x0[[0],:], bounds=bounds, args=(params, y_real), max_iter=100)
         lf_pow = LikelihoodFreeInference(pop_algorithm=powell, num_epochs=num_epochs)
 
+        specific_folder = '-max_iter-' + str(max_iter) + '-epochs-' + str(num_epochs)
+
         tic = time.time()
-        res, f = lf_pow.lf_inference(epsilon=epsilon)
+        res, f = lf_pow.lf_inference(epsilon=epsilon, specific_folder_name=specific_folder)
         plt.hexbin(res[:,0] / 60., res[:,1], gridsize=20)
-        plt.show()
+        plt.colorbar()
+        # plt.show()
+        plt.savefig('../results/' + '/' + 'powell' + specific_folder + '/' + 'histogram')
+        plt.close()
 
         toc = time.time()
         params['k_cat'] = np.mean(res[:,0])
@@ -257,28 +269,31 @@ if __name__ == '__main__':
         params['mixing_prob'] = 0.0
         params['num_cutting_points'] = 0
         params['CR'] = 0.9
-        params['F'] = 1.
+        params['F'] = F
         params['randomized_F'] = False
 
         revpoplife = ReversiblePopLiFe(objective, args=(params, y_real), x0=x0, burn_in_phase=0, num_epochs=num_epochs,
                                        bounds=([bounds[0][0], bounds[0][1]], [bounds[1][0], bounds[1][1]]),
                                        population_size=pop_size,
                                        elitism=0.,
-                                       de_proposal_type='de_times_3')
-                                       # de_proposal_type='proper_differential_3')
-                                       # de_proposal_type='antisymmetric_differential')
+                                       de_proposal_type=de_proposal_type)
         # revpoplife = RevPopLiFe(objective, args=(params, y_real), x0=x0, burn_in_phase=0, num_epochs=num_epochs,
         #                                bounds=([bounds[0][0], bounds[0][1]], [bounds[1][0], bounds[1][1]]),
         #                                population_size=pop_size,
         #                                elitism=0.)
         lf_poplife = LikelihoodFreeInference(pop_algorithm=revpoplife, num_epochs=num_epochs)
 
+        specific_folder = '-' + de_proposal_type + '-F-' + str(params['F']) + '-pop_size-' + str(params['pop_size']) + '-epochs-' + str(num_epochs) + '-v2'
+
         tic = time.time()
-        res, f = lf_poplife.lf_inference(epsilon=epsilon)
+        res, f = lf_poplife.lf_inference(epsilon=epsilon, specific_folder_name=specific_folder)
         toc = time.time()
 
         plt.hexbin(res[:, 0] / 60., res[:, 1], gridsize=20)
-        plt.show()
+        plt.colorbar()
+        # plt.show()
+        plt.savefig('../results/' + '/' + lf_poplife.name + specific_folder + '/' + 'histogram')
+        plt.close()
 
         params['k_cat'] = np.mean(res[:, 0])
         params['K_M'] = np.mean(res[:, 1])
