@@ -1,10 +1,10 @@
+import os
 import time
 import csv
+from datetime import datetime
 from json import load
 from math import ceil
 import numpy as np
-import scipy
-import scipy.optimize as opt
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
@@ -146,17 +146,17 @@ if __name__ == '__main__':
     # INIT
     bounds = [[0., 0], [100.*60, 200.]]
 
-    pop_size = 100
+    pop_size = 50
 
     num_epochs = 20
 
     max_iter = 500
 
-    F = 0.5
+    F = 1.
     # de_proposal_type = 'antisymmetric_differential'
     # de_proposal_type = 'de_times_3'
-    de_proposal_type = 'proper_differential_3'
-    # de_proposal_type = 'proper_differential_1'
+    de_proposal_type = 'differential_3'
+    # de_proposal_type = 'differential_1'
 
     x0 = np.concatenate(
         (np.asarray([np.random.uniform(bounds[0][i], bounds[1][i], (pop_size, 1)) for i in range(len(bounds[0]))])), 1)
@@ -283,16 +283,33 @@ if __name__ == '__main__':
         #                                elitism=0.)
         lf_poplife = LikelihoodFreeInference(pop_algorithm=revpoplife, num_epochs=num_epochs)
 
-        specific_folder = '-' + de_proposal_type + '-F-' + str(params['F']) + '-pop_size-' + str(params['pop_size']) + '-epochs-' + str(num_epochs) + '-v2'
+        specific_folder = '-' + de_proposal_type + '-F-' + str(params['F']) + '-pop_size-' + str(params['pop_size']) + '-epochs-' + str(num_epochs)
+        directory_name = '../results/' + '/' + lf_poplife.name + specific_folder
+
+        if os.path.exists(directory_name):
+            directory_name = directory_name + str(datetime.now())
+
+        directory_name = directory_name + '/'
+        os.makedirs(directory_name)
 
         tic = time.time()
-        res, f = lf_poplife.lf_inference(epsilon=epsilon, specific_folder_name=specific_folder)
+        res, f = lf_poplife.lf_inference(directory_name=directory_name, epsilon=epsilon)
         toc = time.time()
+        
 
+        # Histogram
         plt.hexbin(res[:, 0] / 60., res[:, 1], gridsize=20)
         plt.colorbar()
         # plt.show()
-        plt.savefig('../results/' + '/' + lf_poplife.name + specific_folder + '/' + 'histogram')
+        plt.savefig(directory_name + 'histogram')
+        plt.close()
+
+        # Plot of best results
+        f_best = np.load(directory_name + 'f_best.npy')
+
+        plt.plot(np.arange(0,len(f_best)), np.array(f_best))
+        plt.grid()
+        plt.savefig(directory_name + '/' + 'best_f')
         plt.close()
 
         params['k_cat'] = np.mean(res[:, 0])

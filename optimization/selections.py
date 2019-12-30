@@ -37,7 +37,7 @@ class ProportionalSelection(Selection):
     def __init__(self, elitism=0.):
         super().__init__(elitism=elitism)
 
-    def select(self, x, f, objective_is_probability, epsilon=np.infty, population_size=None, inv_temp=1.):
+    def select(self, x, f, objective_is_probability=False, epsilon=np.infty, population_size=None, inv_temp=1.):
         if population_size is None:
             population_size = x.shape[0]
 

@@ -1,9 +1,6 @@
-from collections import Set
-import os
-from datetime import datetime
 import numpy as np
 import scipy.optimize as opt
-from optimization.proposals import ContinuousProposal, MixingProposal, DifferentialProposal, ProperDifferentialProposal
+from optimization.proposals import ContinuousProposal, MixingProposal, DifferentialProposal
 from optimization.selections import AcceptanceSelection, ProportionalSelection, LikelihoodFreeAcceptanceUniformSelection, \
     LikelihoodFreeAcceptanceGreedySelection, SelectBest, RevGreedy
 import matplotlib.pyplot as plt
@@ -21,37 +18,18 @@ class LikelihoodFreeInference(object):
         else:
             self.name = name
 
-    def lf_inference(self, epsilon=0.1, save_figs_folder='../results/', specific_folder_name=None):
-        directory_name_org =  save_figs_folder + '/' + self.name
-        # if (not os.path.exists(directory_name) ):
-        #     if specific_folder_name is None:
-        #         specific_folder_name = str(datetime.now())
-        #     directory_name = directory_name + specific_folder_name
-        #     os.makedirs(directory_name)
-        # else:
-        #     if specific_folder_name is None:
-        #         specific_folder_name = str(datetime.now())
-        #     directory_name = directory_name + specific_folder_name
-        #     os.makedirs(directory_name)
-        if specific_folder_name is None:
-            specific_folder_name = str(datetime.now())
-        directory_name = directory_name_org + specific_folder_name
-        if os.path.exists(directory_name):
-            directory_name = directory_name_org + str(datetime.now())
-        os.makedirs(directory_name)
+    def lf_inference(self, directory_name, epsilon=0.1):
 
         x_sample = None
 
         while x_sample is None:
-            print(self.name, epsilon)
             x_sample = None
             f_sample = None
 
             x = self.pop_algorithm.x0.copy()
             f = self.pop_algorithm.evaluate_objective(x)
 
-            f_best_so_far = []
-            f_best_so_far.append(np.min(f))
+            f_best_so_far = [np.min(f)]
 
             for i in range(self.num_epochs):
                 x, f = self.pop_algorithm.step(x, f, epsilon=epsilon)
@@ -59,7 +37,7 @@ class LikelihoodFreeInference(object):
                 f_best_so_far.append(np.min(f))
 
                 # save figs
-                if len(save_figs_folder) > 0:
+                if (x.shape[1] == 2):
                     plt.scatter(x[:, 0] / 60., x[:, 1], c=f, vmin=0., vmax=2.)
                     plt.xlim(self.pop_algorithm.bounds[0][0], self.pop_algorithm.bounds[1][0] / 60.)
                     plt.ylim(self.pop_algorithm.bounds[0][1], self.pop_algorithm.bounds[1][1])
@@ -81,10 +59,7 @@ class LikelihoodFreeInference(object):
         x_sample = np.unique(x_sample, axis=0)
         f_sample = np.unique(f_sample, axis=0)
 
-        plt.plot(np.arange(0,len(f_best_so_far)), np.array(f_best_so_far))
-        plt.grid()
-        plt.savefig(directory_name + '/' + 'best_f')
-        plt.close()
+        np.save(directory_name + '/' + 'f_best', np.array(f_best_so_far))
 
         return x_sample, f_sample
 
@@ -278,18 +253,23 @@ class ReversiblePopLiFe(PopulationAlgorithm):
     def __init__(self, fun, args, x0, burn_in_phase = 0, num_epochs=100, bounds=(-np.infty, np.infty),
                  de_proposal_type='proper_differential_1',
                  continuous_proposal_type='gaussian',
+                 selection='best',
                  population_size=None, elitism=0.):
         super().__init__(fun, args)
 
         self.name = 'revpoplife'
 
-        # self.differential = DifferentialProposal(type='reversible_evolution', bounds=bounds, params=self.params)
-        self.differential = ProperDifferentialProposal(type=de_proposal_type, bounds=bounds, params=self.params)
+        self.differential = DifferentialProposal(type=de_proposal_type, bounds=bounds, params=self.params)
         self.proposal = ContinuousProposal(type=continuous_proposal_type, bounds=bounds, params=self.params)
 
-        # self.selection = LikelihoodFreeAcceptanceGreedySelection()
-        self.selection = ProportionalSelection(elitism=elitism)
-        self.best_selection = SelectBest()
+        if selection == 'best':
+            self.selection = SelectBest()
+        elif selection == 'proportional':
+            self.selection = ProportionalSelection(elitism=elitism)
+        # elif selection == 'likelihood_greedy':
+        #     self.selection = LikelihoodFreeAcceptanceGreedySelection()
+        else:
+            raise ValueError('Wrong selection mechanism!')
 
         self.objective_is_probability = False
 
@@ -306,24 +286,14 @@ class ReversiblePopLiFe(PopulationAlgorithm):
 
     def step(self, x, f, epsilon):
 
-        # sample
-        # if self.params['gaussian_prob'] > 0.:
-        #     x_1, x_2 = np.split(x, 2)
-        #     x_new_1 = self.differential.sample(x_1)
-        #     x_new_2 = self.proposal.sample(x_2, prob=self.params['gaussian_prob'])
-        #     x_new = np.concatenate((x_new_1, x_new_2), 0)
-        # else:
-        #     x_new = self.differential.sample(x)
-
-        #
         x_new, _ = self.differential.sample(x)
-        if not(self.differential.type in ['proper_differential_1', 'proper_differential_1_dist', 'de_single']):
+        if not(self.differential.type in ['differential_1', 'differential_1_dist', 'de_single']):
             x_new = np.concatenate(x_new, 0)
 
         if self.params['gaussian_prob'] > 0.:
             x_new = np.concatenate((x_new, x), 0)
             x_new = self.proposal.sample(x_new, prob=self.params['gaussian_prob'])
-            # evaluate
+            # evaluate all, because we add Gaussian noise to all points
             f_new = self.evaluate_objective(x_new)
         else:
             # evaluate only new points
@@ -332,8 +302,7 @@ class ReversiblePopLiFe(PopulationAlgorithm):
             f_new = np.concatenate((f_new, f))
 
         # select
-        x, f = self.best_selection.select(x_new, f_new, population_size=self.population_size)
-        # x, f = self.selection.select(x, f, objective_is_probability=False, epsilon=np.infty, population_size=self.population_size)
+        x, f = self.selection.select(x_new, f_new, population_size=self.population_size)
 
         return x, f
 
@@ -347,7 +316,7 @@ class RevPopLiFe(PopulationAlgorithm):
 
         self.name = 'revpoplife'
 
-        self.differential = ProperDifferentialProposal(bounds=bounds, params=self.params)
+        self.differential = DifferentialProposal(bounds=bounds, params=self.params)
         self.proposal = ContinuousProposal(type=continuous_proposal_type, bounds=bounds, params=self.params)
 
         # self.selection = RevGreedy()

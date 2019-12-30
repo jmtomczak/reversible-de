@@ -40,56 +40,6 @@ class ContinuousProposal(Proposal):
 
 
 class DifferentialProposal(Proposal):
-    def __init__(self, type='differential_evolution', bounds=(-np.infty, np.infty), params=None):
-        super().__init__()
-        self.type = type
-        self.bounds = bounds
-
-        assert (0 <= params['F'] <= 2), 'F must be in [0, 2]'
-        assert (0 < params['CR'] <= 1), 'CR must be in (0, 1]'
-
-        self.F = params['F']
-        self.CR = params['CR']
-
-    def sample(self, x):
-        if self.type == 'differential_evolution':
-            indices = np.arange(x.shape[0])
-            np.random.shuffle(indices)
-            # take first parent
-            parent_1 = x[indices]
-            # assign second parent (shuffle x for that)
-            np.random.shuffle(indices)
-            parent_2 = parent_1[indices, :]
-            # assign third parent
-            np.random.shuffle(indices)
-            parent_3 = parent_1[indices, :]
-
-            p = bernoulli(self.CR, (1, parent_1.shape[1]))
-
-            x = (1-p) * x + p * (parent_1 + self.F * (parent_2 - parent_3))
-
-        elif self.type == 'reversible_evolution':
-            indices = np.arange(x.shape[0])
-            np.random.shuffle(indices)
-            # take first parent
-            x_1 = x[indices]
-            # assign second parent (shuffle x for that)
-            np.random.shuffle(indices)
-            x_2 = x_1[indices, :]
-            # assign third parent
-            np.random.shuffle(indices)
-            x_3 = x_2[indices, :]
-
-            y_1 = x_1 + self.F * (x_2 - x_3)
-            y_2 = x_2 + self.F * (y_1 - x_3)
-            y_3 = x_3 + self.F * (y_2 - y_1)
-
-            x = np.concatenate((y_1, y_2, y_3), 0)
-
-        return np.clip(x, self.bounds[0], self.bounds[1])
-
-
-class ProperDifferentialProposal(Proposal):
     def __init__(self, type='proper_differential_3', bounds=(-np.infty, np.infty), params=None):
         super().__init__()
         self.type = type
@@ -111,27 +61,27 @@ class ProperDifferentialProposal(Proposal):
         x_1 = x[indices_1]
         # assign second parent (ensure)
         indices_2 = np.random.permutation(x.shape[0])
-        while sum(indices_1 == indices_2) > 0:
-            indices_2 = np.random.permutation(x.shape[0])
+        # while sum(indices_1 == indices_2) > 0:
+        #     indices_2 = np.random.permutation(x.shape[0])
         x_2 = x_1[indices_2]
         # assign third parent
         indices_3 = np.random.permutation(x.shape[0])
-        while sum(indices_1 == indices_3) > 0 and sum(indices_2 == indices_3) > 0:
-            indices_3 = np.random.permutation(x.shape[0])
+        # while sum(indices_1 == indices_3) > 0 and sum(indices_2 == indices_3) > 0:
+        #     indices_3 = np.random.permutation(x.shape[0])
         x_3 = x_2[indices_3]
 
-        if self.type == 'proper_differential_1':
+        if self.type == 'differential_1':
             y_1 = np.clip(x_1 + self.F * (x_2 - x_3), self.bounds[0], self.bounds[1])
 
             return (y_1), (indices_1, indices_2, indices_3)
 
-        elif self.type == 'proper_differential_2':
+        elif self.type == 'differential_2':
             y_1 = np.clip(x_1 + self.F * (x_2 - x_3), self.bounds[0], self.bounds[1])
-            y_2 = np.clip(x_2 + self.F * (y_1 - x_3), self.bounds[0], self.bounds[1])
+            y_2 = np.clip(x_2 + self.F * (x_3 - y_1), self.bounds[0], self.bounds[1])
 
             return (y_1, y_2), (indices_1, indices_2, indices_3)
 
-        elif self.type == 'proper_differential_3':
+        elif self.type == 'differential_3':
             # y_1 = np.clip(x_1 + self.F * (x_2 - x_3), self.bounds[0], self.bounds[1])
             # y_2 = np.clip(x_2 + self.F * (y_1 - x_3), self.bounds[0], self.bounds[1])
             # y_3 = np.clip(x_3 + self.F * (y_2 - y_1), self.bounds[0], self.bounds[1])
@@ -181,7 +131,7 @@ class ProperDifferentialProposal(Proposal):
 
             return (y_1, y_2, y_3), (indices_1, indices_2, indices_3)
 
-        elif self.type == 'proper_differential_1_dist':
+        elif self.type == 'differential_1_dist':
             u = x_2 - x_3
             dis2 = np.exp(-np.linalg.norm(x_1 - x_2, axis=1, keepdims=True))
             dis3 = np.exp(-np.linalg.norm(x_1 - x_3, axis=1, keepdims=True))
