@@ -119,6 +119,10 @@ class MichaelisMenten(TestBed):
 
         return P_real, t_points
 
+    @staticmethod
+    def loss(y_real, y_model):
+        return np.linalg.norm(y_real - y_model, ord=2) / y_real.shape[0]
+
     def create_data(self, x0, S_0=200., k_cat=40.5 * 60., K_M=15.7, json_name='hAPN.json'):
         with open(json_name) as f:
             config = load(f)
@@ -138,9 +142,6 @@ class MichaelisMenten(TestBed):
         _, y_real = self.solve_MichaelisMenten(params)
 
         return y_real, params
-
-    def loss(self, y_real, y_model):
-        return np.linalg.norm(y_real - y_model, ord=2) / y_real.shape[0]
 
     def objective(self, x, *args):
         params = args[0].copy()

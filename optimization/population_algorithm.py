@@ -78,9 +78,14 @@ class PopulationAlgorithm(object):
         return self.fun(x, self.params, self.y_real)
 
     def evaluate_objective(self, x):
-        f = np.zeros((x.shape[0],))
-        for i in range(x.shape[0]):
-            f[i] = self.objective_function(x[i])
+        if self.params['evaluate_objective_type'] == 'single':
+            f = np.zeros((x.shape[0],))
+            for i in range(x.shape[0]):
+                f[i] = self.objective_function(x[i])
+        elif self.params['evaluate_objective_type'] == 'full':
+            f = self.objective_function(x)
+        else:
+            raise ValueError('Wrong evaluation type!')
         return f
 
 
