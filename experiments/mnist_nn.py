@@ -8,38 +8,32 @@ import matplotlib.pyplot as plt
 
 from optimization.population_algorithm import LikelihoodFreeInference, ReversiblePopLiFe
 
-from testbeds.benchmarks_testbed import BenchmarkFun
+from testbeds.mnist_testbed import MNIST
 
 if __name__ == '__main__':
 
     # INIT: general hyperparams
-    name = 'rastrigin'
+    name = 'mnist_nn'
 
-    D = 100
+    image_size = (14, 14)
+    hidden_units = 20
 
-    if name == 'schwefel':
-        bounds = [[200.] * D, [500] * D]
-    elif name == 'rastrigin':
-        bounds = [[-5.] * D, [5.] * D]
-    elif name == 'griewank':
-        bounds = [[-5.] * D, [5.] * D]
-    else:
-        raise ValueError('Wrong name')
+    D = image_size[0] * image_size[1] * hidden_units + hidden_units * 10
+
+    bounds = [[-2.] * D, [2.] * D]
 
     pop_size = 500
 
-    num_epochs = 150
+    num_epochs = 20
 
-    max_iter = 500
+    F = 1.5
 
-    F = 2.
-
-    cov_mat = np.eye(D, D)
+    # cov_mat = np.eye(D, D) * 0.1
 
     epsilon = np.infty
 
     # run experiments
-    num_repetitions = 10
+    num_repetitions = 1
 
     proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
 
@@ -47,7 +41,12 @@ if __name__ == '__main__':
 
     final_results = {}
 
+    # Experiment
+    b_fun = MNIST(name=name, image_size=image_size)
+    objective = b_fun.objective
+
     for de_proposal_type in proposal_types:
+
         print(f"------- Now runs: {de_proposal_type} -------")
         for rep in range(num_repetitions):
             print(f"\t-> repetition {rep}")
@@ -56,17 +55,17 @@ if __name__ == '__main__':
 
             # x0 = np.concatenate(
             #     (np.asarray([np.random.uniform(bounds[0][i], bounds[1][i], (pop_size, 1)) for i in range(len(bounds[0]))])), 1)
-            x0 = np.random.uniform(low=bounds[0], high=bounds[1], size=(pop_size, D))
+            # x0 = np.random.uniform(low=bounds[0], high=bounds[1], size=(pop_size, D))
+            x0 = np.random.rand(pop_size, D)
 
-            # Schwefel experiment
-            b_fun = BenchmarkFun(name=name)
-            objective = b_fun.objective
             params = {}
 
-            params['evaluate_objective_type'] = 'full'
+            params['evaluate_objective_type'] = 'single'
 
+            params['image_size'] = image_size
+            params['hidden_units'] = hidden_units
             params['pop_size'] = pop_size
-            params['cov'] = cov_mat
+            # params['cov'] = cov_mat
             params['gaussian_prob'] = .0
             params['mixing_prob'] = 0.0
             params['num_cutting_points'] = 0

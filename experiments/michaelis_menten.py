@@ -16,6 +16,8 @@ from testbeds.mm_testbed import MichaelisMenten
 if __name__ == '__main__':
 
     # INIT: general hyperparams
+    D = 2
+
     bounds = [[0., 0], [100. * 60, 200.]]
 
     pop_size = 50
@@ -48,8 +50,9 @@ if __name__ == '__main__':
 
             np.random.seed(seed=rep)
 
-            x0 = np.concatenate(
-                (np.asarray([np.random.uniform(bounds[0][i], bounds[1][i], (pop_size, 1)) for i in range(len(bounds[0]))])), 1)
+            # x0 = np.concatenate(
+            #     (np.asarray([np.random.uniform(bounds[0][i], bounds[1][i], (pop_size, 1)) for i in range(len(bounds[0]))])), 1)
+            x0 = np.random.uniform(low=bounds[0], high=bounds[1], size=(pop_size, D))
 
             # Michaelis-Menten experiment
             mm = MichaelisMenten()
