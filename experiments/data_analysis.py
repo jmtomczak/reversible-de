@@ -83,8 +83,8 @@ def plot_best(Fs, dataset_name, D=10, pop=500,
 if __name__ == '__main__':
 
     plotting = 'best' # 'F' or 'best'
-    data = 'rastrigin'
-    D = 30
+    data = 'salomon'
+    D = 100
     pop = 500
 
     proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
@@ -108,6 +108,11 @@ if __name__ == '__main__':
             # Fs = [1., 1., 1., 2.] #D=10
             # Fs = [1., 1.5, 1.5, 1.5]  # D=30
             Fs = [1., 1.5, 1.5, 2.]  # D=100
+            plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
+        elif data == 'salomon':
+            # Fs = [1.5, 1.5, 1.5, 1.5] #D=10
+            # Fs = [1., 1.5, 1.5, 1.5]  # D=30
+            Fs = [1., 1.5, 1.5, 1.5]  # D=100
             plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
         else:
             raise ValueError('Wrong data name!')

@@ -16,6 +16,9 @@ class BenchmarkFun(TestBed):
         elif self.name == 'griewank':
             denumerator = np.sqrt(np.arange(x.shape[1]) + 1.)
             f = 1 + np.sum(x ** 2 / 4000., 1) - np.prod(np.cos(x / denumerator), 1)
+        elif self.name == 'salomon':
+            xx = np.sqrt(np.sum(x**2, 1))
+            f = 1 - np.cos(2.*np.pi*xx) + 0.1 * xx
         else:
             raise ValueError('Wrong name!')
         return f

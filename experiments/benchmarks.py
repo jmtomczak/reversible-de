@@ -13,7 +13,7 @@ from testbeds.benchmarks_testbed import BenchmarkFun
 if __name__ == '__main__':
 
     # INIT: general hyperparams
-    name = 'rastrigin'
+    name = 'salomon'
 
     D = 100
 
@@ -22,6 +22,8 @@ if __name__ == '__main__':
     elif name == 'rastrigin':
         bounds = [[-5.] * D, [5.] * D]
     elif name == 'griewank':
+        bounds = [[-5.] * D, [5.] * D]
+    elif name == 'salomon':
         bounds = [[-5.] * D, [5.] * D]
     else:
         raise ValueError('Wrong name')
@@ -32,7 +34,7 @@ if __name__ == '__main__':
 
     max_iter = 500
 
-    F = 2.
+    F = 2.0
 
     cov_mat = np.eye(D, D)
 
@@ -58,7 +60,7 @@ if __name__ == '__main__':
             #     (np.asarray([np.random.uniform(bounds[0][i], bounds[1][i], (pop_size, 1)) for i in range(len(bounds[0]))])), 1)
             x0 = np.random.uniform(low=bounds[0], high=bounds[1], size=(pop_size, D))
 
-            # Schwefel experiment
+            # Experiment
             b_fun = BenchmarkFun(name=name)
             objective = b_fun.objective
             params = {}
