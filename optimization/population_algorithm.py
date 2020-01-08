@@ -34,7 +34,11 @@ class LikelihoodFreeInference(object):
             for i in range(self.num_epochs):
                 x, f = self.pop_algorithm.step(x, f, epsilon=epsilon)
 
-                f_best_so_far.append(np.min(f))
+                f_min = np.min(f)
+                if f_min < f_best_so_far[-1]:
+                    f_best_so_far.append(f_min)
+                else:
+                    f_best_so_far.append(f_best_so_far[-1])
 
                 # # save figs
                 # if (x.shape[1] == 2):
@@ -63,7 +67,6 @@ class LikelihoodFreeInference(object):
 
         np.save(directory_name + '/' + 'f_best', np.array(f_best_so_far))
 
-        # return x, f
         return x_sample, f_sample
 
 
