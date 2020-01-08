@@ -169,5 +169,5 @@ if __name__ == '__main__':
     plt.xlabel('epochs')
     plt.ylabel('objective')
     plt.legend(loc=0)
-    plt.savefig(results_dir + '/' + '_best_f_comparison')
+    plt.savefig(results_dir + '/' + '_best_f_comparison.pdf')
     plt.close()
