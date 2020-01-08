@@ -15,7 +15,7 @@ class MNIST(TestBed):
 
         train_loader = torch.utils.data.DataLoader(datasets.MNIST('../data', train=True,
                                                                  transform=transforms.Compose([transforms.ToTensor()])),
-                                                  batch_size=batch_size, shuffle=False)
+                                                  batch_size=batch_size, shuffle=True)
 
         test_loader = torch.utils.data.DataLoader(datasets.MNIST('../data', train=False,
                                                                  transform=transforms.Compose([transforms.ToTensor()])),
@@ -23,6 +23,7 @@ class MNIST(TestBed):
 
         # TRAIN DATA
         x_train = train_loader.dataset.data.float().numpy() / 255.
+        np.random.shuffle(x_train)
         x_train = x_train[0:train_size]
         self.x_train = np.zeros((x_train.shape[0], image_size[0], image_size[1]))
         for i in range(x_train.shape[0]):
