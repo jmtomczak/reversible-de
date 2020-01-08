@@ -1,8 +1,10 @@
 import pickle
 import numpy as np
 
+import matplotlib
 import matplotlib.pyplot as plt
-
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 
 sp = '_'
 save_dir_name = '../results/'
@@ -39,7 +41,7 @@ def plot_F(dataset_name='griewank', D=10, pop=500, Fs=[1.0], proposal_types=['di
         plt.xlabel('epochs')
         plt.ylabel('objective')
         plt.legend(loc=0)
-        plt.savefig(save_dir_name + '/' + dataset_name + sp + 'D' + str(D) + sp + str(proposal) + sp + '_F_comparison')
+        plt.savefig(save_dir_name + '/' + dataset_name + sp + 'D' + str(D) + sp + str(proposal) + sp + '_F_comparison.pdf')
         plt.close()
 
 
@@ -76,43 +78,58 @@ def plot_best(Fs, dataset_name, D=10, pop=500,
     plt.xlabel('epochs')
     plt.ylabel('objective')
     plt.legend(loc=0)
-    plt.savefig(save_dir_name + '/' + dataset_name + sp + 'D' + str(D) + sp + '_best')
+    plt.savefig(save_dir_name + '/' + dataset_name + sp + 'D' + str(D) + sp + '_best.pdf')
     plt.close()
 
 
 if __name__ == '__main__':
 
-    plotting = 'best' # 'F' or 'best'
-    data = 'salomon'
-    D = 100
+    plottings = ['F', 'best']
+    datasets = ['salomon', 'griewank', 'rastrigin', 'schwefel']
+    Ds = [10, 30, 100]
     pop = 500
 
     proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
 
-    if plotting == 'F':
-        Fs = [1., 1.5, 2.]
-        plot_F(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
+    for plotting in plottings:
+        for data in datasets:
+            for D in Ds:
+                if plotting == 'F':
+                    Fs = [1., 1.5, 2.]
+                    plot_F(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
 
-    elif plotting == 'best':
-        if data == 'griewank':
-            # Fs = [1., 1., 1., 2.] #D=10
-            Fs = [1.5, 1.5, 1.5, 2.]  # D=30
-            # Fs = [1.5, 1.5, 1.5, 2.]  # D=30
-            plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types, num_epochs=None)
-        elif data == 'rastrigin':
-            # Fs = [1., 1., 1., 2.] #D=10
-            Fs = [1., 1., 1., 2.]  # D=30
-            # Fs = [1., 1., 1., 2.]  # D=100
-            plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
-        elif data == 'schwefel':
-            # Fs = [1., 1., 1., 2.] #D=10
-            # Fs = [1., 1.5, 1.5, 1.5]  # D=30
-            Fs = [1., 1.5, 1.5, 2.]  # D=100
-            plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
-        elif data == 'salomon':
-            # Fs = [1.5, 1.5, 1.5, 1.5] #D=10
-            # Fs = [1., 1.5, 1.5, 1.5]  # D=30
-            Fs = [1., 1.5, 1.5, 1.5]  # D=100
-            plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
-        else:
-            raise ValueError('Wrong data name!')
+                elif plotting == 'best':
+                    if data == 'griewank':
+                        if D == 10:
+                            Fs = [1., 1., 1., 2.] #D=10
+                        elif D == 30:
+                            Fs = [1.5, 1.5, 1.5, 2.]  # D=30
+                        elif D == 100:
+                            Fs = [1.5, 1.5, 1.5, 2.]  # D=30
+                        plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types, num_epochs=None)
+                    elif data == 'rastrigin':
+                        if D == 10:
+                            Fs = [1., 1., 1., 2.] #D=10
+                        elif D == 30:
+                            Fs = [1., 1., 1., 2.]  # D=30
+                        elif D == 100:
+                            Fs = [1., 1., 1., 2.]  # D=100
+                        plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
+                    elif data == 'schwefel':
+                        if D == 10:
+                            Fs = [1., 1., 1., 2.] #D=10
+                        elif D == 30:
+                            Fs = [1., 1.5, 1.5, 1.5]  # D=30
+                        elif D == 100:
+                            Fs = [1., 1.5, 1.5, 2.]  # D=100
+                        plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
+                    elif data == 'salomon':
+                        if D == 10:
+                            Fs = [1.5, 1.5, 1.5, 1.5] #D=10
+                        elif D == 30:
+                            Fs = [1., 1.5, 1.5, 1.5]  # D=30
+                        elif D == 100:
+                            Fs = [1., 1.5, 1.5, 1.5]  # D=100
+                        plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
+                    else:
+                        raise ValueError('Wrong data name!')

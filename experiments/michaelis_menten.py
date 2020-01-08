@@ -1,10 +1,14 @@
 import os
 import time
 import pickle
-from datetime import datetime
+import matplotlib
 
+from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
+
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 
 from optimization.evolutionary_algorithm import EvolutionaryAlgorithm as EA
 from optimization.population_algorithm import MetropolisHastings, Powell, Evolutionary, PopLiFe, \

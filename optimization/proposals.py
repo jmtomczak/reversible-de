@@ -45,8 +45,8 @@ class DifferentialProposal(Proposal):
         self.type = type
         self.bounds = bounds
 
-        assert (0 <= params['F'] <= 2), 'F must be in [0, 2]'
-        assert (0 < params['CR'] <= 1), 'CR must be in (0, 1]'
+        assert (0. <= params['F'] <= 5.), 'F must be in [0, 2]'
+        assert (0. < params['CR'] <= 1.), 'CR must be in (0, 1]'
 
         self.randomized_F = params['randomized_F']
         self.F = params['F'] / 4.

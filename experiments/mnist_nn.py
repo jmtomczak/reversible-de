@@ -1,10 +1,14 @@
 import os
 import time
 import pickle
-from datetime import datetime
+import matplotlib
 
+from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
+
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 
 from optimization.population_algorithm import LikelihoodFreeInference, ReversiblePopLiFe
 
@@ -20,20 +24,20 @@ if __name__ == '__main__':
 
     D = image_size[0] * image_size[1] * hidden_units + hidden_units * 10
 
-    bounds = [[-2.] * D, [2.] * D]
+    bounds = [[-3.] * D, [3.] * D]
 
     pop_size = 500
 
-    num_epochs = 20
+    num_epochs = 200
 
-    F = 1.5
+    F = 3.
 
     # cov_mat = np.eye(D, D) * 0.1
 
     epsilon = np.infty
 
     # run experiments
-    num_repetitions = 1
+    num_repetitions = 3
 
     proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
 
@@ -53,14 +57,12 @@ if __name__ == '__main__':
 
             np.random.seed(seed=rep)
 
-            # x0 = np.concatenate(
-            #     (np.asarray([np.random.uniform(bounds[0][i], bounds[1][i], (pop_size, 1)) for i in range(len(bounds[0]))])), 1)
-            # x0 = np.random.uniform(low=bounds[0], high=bounds[1], size=(pop_size, D))
-            x0 = np.random.rand(pop_size, D)
+            x0 = np.random.randn(pop_size, D)
 
             params = {}
 
             params['evaluate_objective_type'] = 'single'
+            params['evaluate'] = False
 
             params['image_size'] = image_size
             params['hidden_units'] = hidden_units
@@ -91,7 +93,14 @@ if __name__ == '__main__':
             os.makedirs(directory_name)
 
             tic = time.time()
+            # after "training"
             res, f = lf_poplife.lf_inference(directory_name=directory_name, epsilon=epsilon)
+            np.save(directory_name + '/' + 'solutions', np.array(res))
+            # testing
+            revpoplife.params['evaluate'] = True
+            ind_best = f.argmin()
+            f_test = revpoplife.evaluate_objective(res[[ind_best]])
+            np.save(directory_name + '/' + 'f_TEST_best', np.array(f_test))
             toc = time.time()
 
             # Plot of best results
@@ -99,7 +108,7 @@ if __name__ == '__main__':
 
             plt.plot(np.arange(0, len(f_best)), np.array(f_best))
             plt.grid()
-            plt.savefig(directory_name + '/' + 'best_f')
+            plt.savefig(directory_name + '/' + 'best_f.pdf')
             plt.close()
 
             # print('\tResult: ', res.mean(0), 'time elapsed=', toc - tic)
@@ -111,10 +120,17 @@ if __name__ == '__main__':
             dir = directory_name_avg + '-r' + str(r)
             if r == 0:
                 f_best_avg = np.load(dir + '/' + 'f_best.npy')
+                f_TEST_best = np.load(dir + '/' + 'f_TEST_best.npy')
             else:
                 f_best_avg = np.concatenate((f_best_avg, np.load(dir + '/' + 'f_best.npy')), 0)
+                f_TEST_best = np.concatenate((f_TEST_best, np.load(dir + '/' + 'f_TEST_best.npy')), 0)
 
         f_best_avg = np.reshape(f_best_avg, (num_repetitions, num_epochs+1))
+
+        # saving best results to the file
+        f = open(results_dir + '/' + 'best_test_results.txt', "a")
+        f.writelines(de_proposal_type + ': ' + str(np.mean(f_TEST_best)) + ' (' + str(np.std(f_TEST_best)) + ')' + '\n')
+        f.close()
 
         # plotting
         x_epochs = np.arange(0, f_best_avg.shape[1])
@@ -127,7 +143,7 @@ if __name__ == '__main__':
         plt.plot(x_epochs, y_f)
         plt.fill_between(x_epochs, y_f - y_f_std, y_f + y_f_std)
         plt.grid()
-        plt.savefig(results_dir + '/' + lf_poplife.name + de_proposal_type + '_best_f_avg')
+        plt.savefig(results_dir + '/' + lf_poplife.name + de_proposal_type + '_best_f_avg.pdf')
         plt.close()
 
     # save final results (just in case!)

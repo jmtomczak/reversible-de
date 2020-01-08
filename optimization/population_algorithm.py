@@ -36,31 +36,34 @@ class LikelihoodFreeInference(object):
 
                 f_best_so_far.append(np.min(f))
 
-                # save figs
-                if (x.shape[1] == 2):
-                    plt.scatter(x[:, 0] / 60., x[:, 1], c=f, vmin=0., vmax=2.)
-                    plt.xlim(self.pop_algorithm.bounds[0][0], self.pop_algorithm.bounds[1][0] / 60.)
-                    plt.ylim(self.pop_algorithm.bounds[0][1], self.pop_algorithm.bounds[1][1])
-                    plt.colorbar()
-                    plt.savefig(directory_name + '/' + str(i))
-                    plt.close()
+                # # save figs
+                # if (x.shape[1] == 2):
+                #     plt.scatter(x[:, 0] / 60., x[:, 1], c=f, vmin=0., vmax=2.)
+                #     plt.xlim(self.pop_algorithm.bounds[0][0], self.pop_algorithm.bounds[1][0] / 60.)
+                #     plt.ylim(self.pop_algorithm.bounds[0][1], self.pop_algorithm.bounds[1][1])
+                #     plt.colorbar()
+                #     plt.savefig(directory_name + '/' + str(i))
+                #     plt.close()
 
-                indices = f < epsilon
-                if np.sum(indices) > 0:
-                    if x_sample is None:
-                        x_sample = x[indices]
-                        f_sample = f[indices]
-                    else:
-                        x_sample = np.concatenate((x_sample, x[indices]), 0)
-                        f_sample = np.concatenate((f_sample, f[indices]), 0)
+                # indices = f < epsilon
+                # if np.sum(indices) > 0:
+                #     if x_sample is None:
+                #         x_sample = x[indices]
+                #         f_sample = f[indices]
+                #     else:
+                #         x_sample = np.concatenate((x_sample, x[indices]), 0)
+                #         f_sample = np.concatenate((f_sample, f[indices]), 0)
+                x_sample = x
+                f_sample = f
 
             epsilon = epsilon * 2.
 
-        x_sample = np.unique(x_sample, axis=0)
-        f_sample = np.unique(f_sample, axis=0)
+        # x_sample = np.unique(x_sample, axis=0)
+        # f_sample = np.unique(f_sample, axis=0)
 
         np.save(directory_name + '/' + 'f_best', np.array(f_best_so_far))
 
+        # return x, f
         return x_sample, f_sample
 
 
