@@ -29,7 +29,13 @@ class LikelihoodFreeInference(object):
             x = self.pop_algorithm.x0.copy()
             f = self.pop_algorithm.evaluate_objective(x)
 
-            f_best_so_far = [np.min(f)]
+            f_min = np.min(f)
+            ind_min = np.argmin(f)
+
+            f_best_so_far = [f_min]
+
+            x_sample = x[[ind_min]]
+            f_sample = np.asarray([f_min])
 
             for i in range(self.num_epochs):
                 x, f = self.pop_algorithm.step(x, f, epsilon=epsilon)
@@ -37,6 +43,11 @@ class LikelihoodFreeInference(object):
                 f_min = np.min(f)
                 if f_min < f_best_so_far[-1]:
                     f_best_so_far.append(f_min)
+
+                    ind_min = np.argmin(f)
+
+                    x_sample = np.concatenate((x_sample, x[[ind_min]]), 0)
+                    f_sample = np.concatenate((f_sample, np.asarray([f_min])), 0)
                 else:
                     f_best_so_far.append(f_best_so_far[-1])
 
@@ -57,8 +68,6 @@ class LikelihoodFreeInference(object):
                 #     else:
                 #         x_sample = np.concatenate((x_sample, x[indices]), 0)
                 #         f_sample = np.concatenate((f_sample, f[indices]), 0)
-                x_sample = x
-                f_sample = f
 
             epsilon = epsilon * 2.
 

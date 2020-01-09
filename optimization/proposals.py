@@ -72,12 +72,21 @@ class DifferentialProposal(Proposal):
 
         if self.type == 'differential_1':
             y_1 = np.clip(x_1 + self.F * (x_2 - x_3), self.bounds[0], self.bounds[1])
+            if self.CR < 1.:
+                p_1 = bernoulli(self.CR, y_1.shape)
+                y_1 = p_1 * y_1 + (1. - p_1) * x_1
 
             return (y_1), (indices_1, indices_2, indices_3)
 
         elif self.type == 'differential_2':
             y_1 = np.clip(x_1 + self.F * (x_2 - x_3), self.bounds[0], self.bounds[1])
             y_2 = np.clip(x_2 + self.F * (x_3 - y_1), self.bounds[0], self.bounds[1])
+
+            if self.CR < 1.:
+                p_1 = bernoulli(self.CR, y_1.shape)
+                p_2 = bernoulli(self.CR, y_2.shape)
+                y_1 = p_1 * y_1 + (1. - p_1) * x_1
+                y_2 = p_2 * y_2 + (1. - p_2) * x_2
 
             return (y_1, y_2), (indices_1, indices_2, indices_3)
 
@@ -90,6 +99,14 @@ class DifferentialProposal(Proposal):
             y_2 = np.clip(x_2 + self.F * (x_3 - y_1), self.bounds[0], self.bounds[1])
             y_3 = np.clip(x_3 + self.F * (y_1 - y_2), self.bounds[0], self.bounds[1])
 
+            if self.CR < 1.:
+                p_1 = bernoulli(self.CR, y_1.shape)
+                p_2 = bernoulli(self.CR, y_2.shape)
+                p_3 = bernoulli(self.CR, y_3.shape)
+                y_1 = p_1 * y_1 + (1. - p_1) * x_1
+                y_2 = p_2 * y_2 + (1. - p_2) * x_2
+                y_3 = p_3 * y_3 + (1. - p_3) * x_3
+
             return (y_1, y_2, y_3), (indices_1, indices_2, indices_3)
 
         elif self.type == 'antisymmetric_differential':
@@ -97,11 +114,23 @@ class DifferentialProposal(Proposal):
             y_2 = np.clip(x_2 + self.F * (x_3 - x_1), self.bounds[0], self.bounds[1])
             y_3 = np.clip(x_3 + self.F * (x_1 - x_2), self.bounds[0], self.bounds[1])
 
+            if self.CR < 1.:
+                p_1 = bernoulli(self.CR, y_1.shape)
+                p_2 = bernoulli(self.CR, y_2.shape)
+                p_3 = bernoulli(self.CR, y_3.shape)
+                y_1 = p_1 * y_1 + (1. - p_1) * x_1
+                y_2 = p_2 * y_2 + (1. - p_2) * x_2
+                y_3 = p_3 * y_3 + (1. - p_3) * x_3
+
             return (y_1, y_2, y_3), (indices_1, indices_2, indices_3)
 
         if self.type == 'de_times_3':
             # y1
             y_1 = np.clip(x_1 + self.F * (x_2 - x_3), self.bounds[0], self.bounds[1])
+
+            if self.CR < 1.:
+                p_1 = bernoulli(self.CR, y_1.shape)
+                y_1 = p_1 * y_1 + (1. - p_1) * x_1
 
             # y2
             indices_1p = np.arange(x.shape[0])
@@ -116,6 +145,10 @@ class DifferentialProposal(Proposal):
 
             y_2 = np.clip(x_1 + self.F * (x_2 - x_3), self.bounds[0], self.bounds[1])
 
+            if self.CR < 1.:
+                p_2 = bernoulli(self.CR, y_2.shape)
+                y_2 = p_2 * y_2 + (1. - p_2) * x_1
+
             # y3
             indices_1p = np.arange(x.shape[0])
             # take first parent
@@ -128,6 +161,10 @@ class DifferentialProposal(Proposal):
             x_3 = x_2[indices_3p]
 
             y_3 = np.clip(x_1 + self.F * (x_2 - x_3), self.bounds[0], self.bounds[1])
+
+            if self.CR < 1.:
+                p_3 = bernoulli(self.CR, y_3.shape)
+                y_3 = p_3 * y_3 + (1. - p_3) * x_1
 
             return (y_1, y_2, y_3), (indices_1, indices_2, indices_3)
 
