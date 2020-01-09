@@ -79,7 +79,7 @@ if __name__ == '__main__':
                         params['gaussian_prob'] = .0
                         params['mixing_prob'] = 0.0
                         params['num_cutting_points'] = 0
-                        params['CR'] = 0.999
+                        params['CR'] = 0.9
                         params['F'] = F
                         params['randomized_F'] = False
 

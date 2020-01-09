@@ -88,7 +88,7 @@ def plot_best(Fs, dataset_name, D=10, pop=500,
 if __name__ == '__main__':
 
     # plottings = ['F', 'best']
-    plottings = ['F']
+    plottings = ['best']
     datasets = ['salomon', 'griewank', 'rastrigin', 'schwefel']
     Ds = [10, 30, 100]
     pop = 500
@@ -110,7 +110,7 @@ if __name__ == '__main__':
                 elif plotting == 'best':
                     if data == 'griewank':
                         if D == 10:
-                            Fs = [1., 1., 1., 2.] #D=10
+                            Fs = [1., 1.5, 1., 2.] #D=10
                         elif D == 30:
                             Fs = [1.5, 1.5, 1.5, 2.]  # D=30
                         elif D == 100:
@@ -134,11 +134,11 @@ if __name__ == '__main__':
                         plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
                     elif data == 'schwefel':
                         if D == 10:
-                            Fs = [1., 1., 1., 1.5] #D=10
+                            Fs = [1., 1.5, 1., 2.0] #D=10
                         elif D == 30:
                             Fs = [1., 1.5, 1.5, 2.0]  # D=30
                         elif D == 100:
-                            Fs = [1., 1.5, 1.5, 1.5]  # D=100
+                            Fs = [1., 1.5, 1.5, 2.0]  # D=100
                         plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
                     else:
                         raise ValueError('Wrong data name!')
