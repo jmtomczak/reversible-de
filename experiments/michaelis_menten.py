@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import pickle
 import matplotlib
@@ -10,10 +11,12 @@ import matplotlib.pyplot as plt
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
-from optimization.evolutionary_algorithm import EvolutionaryAlgorithm as EA
-from optimization.population_algorithm import MetropolisHastings, Powell, Evolutionary, PopLiFe, \
-    LikelihoodFreeInference, \
-    ReversiblePopLiFe
+PYTHONPATH = '/home/jakub/Dev/github/life/experiments'  # ripper5
+# PYTHONPATH = '/Users/jmt/Dev/github/life/experiments'  #mac
+
+sys.path.append(os.path.dirname(os.path.expanduser(PYTHONPATH)))
+
+from optimization.population_algorithm import LikelihoodFreeInference, ReversiblePopLiFe
 
 from testbeds.mm_testbed import MichaelisMenten
 
