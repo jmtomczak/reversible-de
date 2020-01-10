@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
-PYTHONPATH = '/home/jakub/Dev/github/life/experiments'  # ripper5
-# PYTHONPATH = '/Users/jmt/Dev/github/life/experiments'  #mac
+# PYTHONPATH = '/home/jakub/Dev/github/life/experiments'  # ripper5
+PYTHONPATH = '/Users/jmt/Dev/github/life/experiments'  #mac
 
 sys.path.append(os.path.dirname(os.path.expanduser(PYTHONPATH)))
 
@@ -31,12 +31,12 @@ if __name__ == '__main__':
 
         pop_size = 50
 
-        num_epochs = 150
+        num_epochs = 20
 
         epsilon = np.infty
 
         # run experiments
-        num_repetitions = 3
+        num_repetitions = 10
 
         proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
 
