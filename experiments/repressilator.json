@@ -1,0 +1,24 @@
+{
+  "experiment_details":{
+    "_comment0": "h: time (in seconds) between two measurements, exp_last: time (in minutes) of the entire experiments (suggested time: no shorter than 15 minutes)",
+    "h":          1.0,
+    "exp_last":   2.0
+  },
+
+  "abc_details":{
+    "_comment1": "low_alpha0 and high_alpha0: minimal and maximal value of alpha0 for searching",
+    "low_alpha0":  -2.0,
+    "high_alpha0": 10.0,
+    "_comment2": "low_n and high_n: minimal and maximal value of n for searching",
+    "low_n":  0.0,
+    "high_n": 10.0,
+    "_comment3": "low_beta and high_beta: minimal and maximal value of beta for searching",
+    "low_beta":  -5.0,
+    "high_beta": 20.0,
+    "_comment4": "low_alpha0 and high_alpha0: minimal and maximal value of alpha0 for searching",
+    "low_alpha":  500.0,
+    "high_alpha": 2500.0
+  }
+
+
+}
