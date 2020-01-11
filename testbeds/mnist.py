@@ -4,8 +4,8 @@ import pickle
 import numpy as np
 from urllib import request
 
-# PYTHONPATH = '/home/jakub/Dev/github/life'  # ripper5
-PYTHONPATH = '/Users/jmt/Dev/github/life'  #mac
+PYTHONPATH = '/home/jakub/Dev/github/life'  # ripper5
+# PYTHONPATH = '/Users/jmt/Dev/github/life'  #mac
 
 filename = [
 ["training_images","train-images-idx3-ubyte.gz"],
@@ -18,6 +18,7 @@ filename = [
 def download_mnist(location):
     base_url = "http://yann.lecun.com/exdb/mnist/"
     for name in filename:
+        print(name)
         print("Downloading " + name[1] + "...")
         request.urlretrieve(base_url + name[1], location + name[1])
     print("Download complete.")
