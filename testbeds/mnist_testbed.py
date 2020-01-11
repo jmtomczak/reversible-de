@@ -23,13 +23,12 @@ class MNIST(TestBed):
 
         # TRAIN DATA
         x_train = train_loader.dataset.data.float().numpy() / 255.
-        np.random.shuffle(x_train)
         x_train = x_train[0:train_size]
         self.x_train = np.zeros((x_train.shape[0], image_size[0], image_size[1]))
         for i in range(x_train.shape[0]):
             self.x_train[i] = resize(x_train[i], image_size, anti_aliasing=True)
         self.x_train = np.reshape(self.x_train, (x_train.shape[0], image_size[0] * image_size[1]))
-        self.y_train = np.array(train_loader.dataset.targets.float().numpy(), dtype=int)
+        self.y_train = np.array(train_loader.dataset.targets.float().numpy(), dtype=int)[0:train_size]
 
         # TEST DATA
         x_test = test_loader.dataset.data.float().numpy() / 255.

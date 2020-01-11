@@ -23,11 +23,11 @@ def plot_F(dataset_name='griewank', D=10, pop=500, Fs=[1.0], proposal_types=['di
         linestyles = ['-', '-.', 'dotted']
         iter = 0
         for F in Fs:
-            dir_name = '../results/' + dataset_name + sp + 'D' + str(D) + sp + 'F' + sp + str(F) + sp + 'pop' + sp + str(pop)
-            file_name = dataset_name + 'D' + str(D) + '.pkl'
-            # # For Michaelis-Menten
-            # dir_name = '../results/' + dataset_name + sp + 'F' + sp + str(F) + sp + 'pop' + sp + str(pop)
-            # file_name = 'michaelis_menten' + '.pkl'
+            # dir_name = '../results/' + dataset_name + sp + 'D' + str(D) + sp + 'F' + sp + str(F) + sp + 'pop' + sp + str(pop)
+            # file_name = dataset_name + 'D' + str(D) + '.pkl'
+            # For Michaelis-Menten
+            dir_name = '../results/' + dataset_name + sp + 'F' + sp + str(F) + sp + 'pop' + sp + str(pop)
+            file_name = 'michaelis_menten' + '.pkl'
 
             # load data
             file_to_load = dir_name + '/' + file_name
@@ -61,8 +61,11 @@ def plot_best(Fs, dataset_name, D=10, pop=500,
     for proposal in proposal_types:
         F = Fs[iter]
 
-        dir_name = '../results/' + dataset_name + sp + 'D' + str(D) + sp + 'F' + sp + str(F) + sp + 'pop' + sp + str(pop)
-        file_name = dataset_name + 'D' + str(D) + '.pkl'
+        # dir_name = '../results/' + dataset_name + sp + 'D' + str(D) + sp + 'F' + sp + str(F) + sp + 'pop' + sp + str(pop)
+        # file_name = dataset_name + 'D' + str(D) + '.pkl'
+        # For Michaelis-Menten
+        dir_name = '../results/' + dataset_name + sp + 'F' + sp + str(F) + sp + 'pop' + sp + str(pop)
+        file_name = 'michaelis_menten' + '.pkl'
 
         # load data
         file_to_load = dir_name + '/' + file_name
@@ -97,6 +100,11 @@ if __name__ == '__main__':
     # datasets = ['MichaelisMenten']
     # Ds = [2]
     # pop = 50
+
+    # For Repressilator
+    datasets = ['Repressilator']
+    Ds = [4]
+    pop = 50
 
     proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
 
@@ -139,6 +147,9 @@ if __name__ == '__main__':
                             Fs = [1., 1.5, 1.5, 2.0]  # D=30
                         elif D == 100:
                             Fs = [1., 1.5, 1.5, 2.0]  # D=100
+                        plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
+                    elif data == 'Repressilator':
+                        Fs = [2.0, 2.0, 2.0, 2.0]  # best
                         plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
                     else:
                         raise ValueError('Wrong data name!')

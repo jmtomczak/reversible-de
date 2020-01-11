@@ -18,11 +18,11 @@ sys.path.append(os.path.dirname(os.path.expanduser(PYTHONPATH)))
 
 from optimization.population_algorithm import LikelihoodFreeInference, ReversiblePopLiFe
 
-from testbeds.mnist_testbed import MNIST
+from testbeds.mnist_testbed2 import MNIST
 
 if __name__ == '__main__':
 
-    Fs = [1., 1.5, 2., 3.]
+    Fs = [1., 1.5, 2.]
 
     for F in Fs:
         # INIT: general hyperparams
@@ -35,9 +35,9 @@ if __name__ == '__main__':
 
         bounds = [[-3.] * D, [3.] * D]
 
-        pop_size = 200
+        pop_size = 500
 
-        num_epochs = 10
+        num_epochs = 200
 
         # cov_mat = np.eye(D, D) * 0.1
 
