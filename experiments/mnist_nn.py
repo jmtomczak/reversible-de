@@ -44,7 +44,7 @@ if __name__ == '__main__':
         epsilon = np.infty
 
         # run experiments
-        num_repetitions = 2
+        num_repetitions = 3
 
         proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
 
