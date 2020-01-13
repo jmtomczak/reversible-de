@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
-PYTHONPATH = '/home/jakub/Dev/github/life/experiments'  # ripper5
-# PYTHONPATH = '/Users/jmt/Dev/github/life/experiments'  #mac
+# PYTHONPATH = '/home/jakub/Dev/github/life/experiments'  # ripper5
+PYTHONPATH = '/Users/jmt/Dev/github/life/experiments'  #mac
 
 sys.path.append(os.path.dirname(os.path.expanduser(PYTHONPATH)))
 
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
         pop_size = 500
 
-        num_epochs = 200
+        num_epochs = 500
 
         # cov_mat = np.eye(D, D) * 0.1
 
@@ -53,7 +53,7 @@ if __name__ == '__main__':
         final_results = {}
 
         # Experiment
-        b_fun = MNIST(name=name, image_size=image_size)
+        b_fun = MNIST(name=name, image_size=image_size, train_size=1000)
         objective = b_fun.objective
 
         for de_proposal_type in proposal_types:
