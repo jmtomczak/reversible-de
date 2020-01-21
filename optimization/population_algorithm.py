@@ -1,3 +1,4 @@
+import pickle
 import numpy as np
 import scipy.optimize as opt
 from optimization.proposals import ContinuousProposal, MixingProposal, DifferentialProposal
@@ -18,9 +19,10 @@ class LikelihoodFreeInference(object):
         else:
             self.name = name
 
-    def lf_inference(self, directory_name, epsilon=0.1):
+    def lf_inference(self, directory_name, epsilon=0.1, name=None):
 
         x_sample = None
+        x_population = {}
 
         while x_sample is None:
             x_sample = None
@@ -28,6 +30,8 @@ class LikelihoodFreeInference(object):
 
             x = self.pop_algorithm.x0.copy()
             f = self.pop_algorithm.evaluate_objective(x)
+            if name is not None:
+                x_population['-1'] = x
 
             f_min = np.min(f)
             ind_min = np.argmin(f)
@@ -39,6 +43,8 @@ class LikelihoodFreeInference(object):
 
             for i in range(self.num_epochs):
                 x, f = self.pop_algorithm.step(x, f, epsilon=epsilon)
+                if name is not None:
+                    x_population[str(i)] = x
 
                 f_min = np.min(f)
                 if f_min < f_best_so_far[-1]:
@@ -73,6 +79,11 @@ class LikelihoodFreeInference(object):
 
         # x_sample = np.unique(x_sample, axis=0)
         # f_sample = np.unique(f_sample, axis=0)
+
+        if name is not None:
+            file_name = open(directory_name + '/' + name + '.pkl', "wb")
+            pickle.dump(x_population, file_name)
+            file_name.close()
 
         np.save(directory_name + '/' + 'f_best', np.array(f_best_so_far))
 

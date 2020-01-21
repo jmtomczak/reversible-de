@@ -18,18 +18,18 @@ sys.path.append(os.path.dirname(os.path.expanduser(PYTHONPATH)))
 
 from optimization.population_algorithm import LikelihoodFreeInference, ReversiblePopLiFe
 
-from testbeds.repressilator_testbed import Repressilator
+from testbeds.general_repressilator_testbed import Repressilator
 
 
 if __name__ == '__main__':
 
     # INIT: general hyperparams
-    D = 4
-    Fs = [1.5]
+    D = 12
+    Fs = [1., 1.5, 2.0]
 
     for F in Fs:
 
-        pop_size = 100
+        pop_size = 10
 
         num_epochs = 20
 
@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
         proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
 
-        results_dir = '../results/Repressilator_F_' + str(F) + '_pop_' + str(pop_size)
+        results_dir = '../results/GeneralRepressilator_F_' + str(F) + '_pop_' + str(pop_size)
 
         final_results = {}
 
@@ -51,9 +51,9 @@ if __name__ == '__main__':
 
                 np.random.seed(seed=rep)
 
-                # Michaelis-Menten experiment
+                # General Repressilator experiment
                 r = Repressilator()
-                y_real, params = r.create_data(pop_size=pop_size)
+                y_real, params = r.create_data(pop_size=pop_size, alpha0=[1., 1.5, 2.], beta=[1., 2., 1.5], alpha=[800., 1000., 900.])
                 objective = r.objective
 
                 params['evaluate_objective_type'] = 'single'
@@ -123,7 +123,7 @@ if __name__ == '__main__':
             plt.close()
 
         # save final results (just in case!)
-        f = open(results_dir + '/' + 'repressilator.pkl', "wb")
+        f = open(results_dir + '/' + 'general_repressilator.pkl', "wb")
         pickle.dump(final_results, f)
         f.close()
 
