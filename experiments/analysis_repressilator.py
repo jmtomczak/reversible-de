@@ -32,7 +32,7 @@ def plot_populations(dir_name, x_axis=3, y_axis=2, x_label='alpha', y_label='bet
         xi = x_populations[str(i)][:,x_axis]
         yi = x_populations[str(i)][:, y_axis]
 
-        plt.scatter(x=xi, y=yi, label=str(i), alpha=0.5)
+        plt.scatter(x=xi, y=yi, label=str(i+1), alpha=0.5)
 
     plt.grid()
 
@@ -52,13 +52,27 @@ def plot_populations(dir_name, x_axis=3, y_axis=2, x_label='alpha', y_label='bet
 
 if __name__ == '__main__':
 
+    name = 'Repressilator'
+    D = 4
+    F = 1.5
+    de_proposal_type = 'antisymmetric_differential'
+    pop_size = 500
+    num_epochs = 20
+
+    rep = 0
+
+    results_dir = '../results/' + name + '_F_' + str(F) + '_pop_' + str(pop_size)
+    specific_folder = '-' + de_proposal_type + '-F-' + str(F) + '-pop_size-' + str(pop_size) + '-epochs-' + str(num_epochs)
+    directory_name = results_dir + '/' + 'revpoplife' + specific_folder + '-r' + str(rep)
+
+
     x_axes = [3, 0, 1, 0]
     y_axes = [2, 2, 2, 1]
     x_labels = ['alpha', 'alpha_0', 'n', 'alpha_0']
     y_labels = ['beta', 'beta','beta', 'n']
 
     for i in range(len(x_axes)):
-        plot_populations(dir_name='../results/Repressilator_F_1.5_pop_100/revpoplife-differential_1-F-1.5-pop_size-100-epochs-20-r0',
+        plot_populations(dir_name=directory_name,
                          x_axis=x_axes[i], y_axis=y_axes[i],
                          x_label=x_labels[i], y_label=y_labels[i],
-                         epochs=[-1, 5, 10, 19])
+                         epochs=[0, 3, 7, 19])

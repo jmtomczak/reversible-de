@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
-# PYTHONPATH = '/home/jakub/Dev/github/life/experiments'  # ripper5
-PYTHONPATH = '/Users/jmt/Dev/github/life/experiments'  #mac
+PYTHONPATH = '/home/jakub/Dev/github/life/experiments'  # ripper5
+# PYTHONPATH = '/Users/jmt/Dev/github/life/experiments'  #mac
 
 sys.path.append(os.path.dirname(os.path.expanduser(PYTHONPATH)))
 
@@ -33,9 +33,9 @@ if __name__ == '__main__':
 
         D = image_size[0] * image_size[1] * hidden_units + hidden_units * 10
 
-        bounds = [[-3.] * D, [3.] * D]
+        bounds = [[-2.] * D, [2.] * D]
 
-        pop_size = 500
+        pop_size = 1000
 
         num_epochs = 500
 
@@ -53,7 +53,7 @@ if __name__ == '__main__':
         final_results = {}
 
         # Experiment
-        b_fun = MNIST(name=name, image_size=image_size, train_size=1000)
+        b_fun = MNIST(name=name, image_size=image_size, train_size=2000)
         objective = b_fun.objective
 
         for de_proposal_type in proposal_types:
@@ -65,8 +65,9 @@ if __name__ == '__main__':
                 np.random.seed(seed=rep)
 
                 # xavier init
-                xavier = np.asarray([np.sqrt(2. / (image_size[0] * image_size[1] + 20.))] * image_size[0] * image_size[1] * 20 + [np.sqrt(2. / (20. + 10.))] * 20 * 10)
-                x0 = np.random.randn(pop_size, D) * xavier
+                # xavier = np.asarray([np.sqrt(2. / (image_size[0] * image_size[1] + 20.))] * image_size[0] * image_size[1] * 20 + [np.sqrt(2. / (20. + 10.))] * 20 * 10)
+                # x0 = np.random.randn(pop_size, D) * xavier
+                x0 = np.random.randn(pop_size, D) * 0.01
 
                 params = {}
 

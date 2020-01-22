@@ -43,6 +43,7 @@ class LikelihoodFreeInference(object):
 
             for i in range(self.num_epochs):
                 x, f = self.pop_algorithm.step(x, f, epsilon=epsilon)
+
                 if name is not None:
                     x_population[str(i)] = x
 
@@ -86,6 +87,9 @@ class LikelihoodFreeInference(object):
             file_name.close()
 
         np.save(directory_name + '/' + 'f_best', np.array(f_best_so_far))
+
+        np.save(directory_name + '/' + 'last_x', np.array(x))
+        np.save(directory_name + '/' + 'last_f', np.array(f))
 
         return x_sample, f_sample
 
