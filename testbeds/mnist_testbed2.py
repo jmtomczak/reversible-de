@@ -41,6 +41,7 @@ class MNIST(TestBed):
         self.x_train = np.zeros((x_train.shape[0], image_size[0], image_size[1]))
         for i in range(x_train.shape[0]):
             self.x_train[i] = resize(x_train[i], image_size, anti_aliasing=True)
+        self.x_train = np.reshape(self.x_train, (train_size, image_size[0] * image_size[1]))
         self.y_train = y_train[0:train_size]
 
         # TEST DATA
@@ -48,6 +49,7 @@ class MNIST(TestBed):
         self.x_test = np.zeros((x_test.shape[0], image_size[0], image_size[1]))
         for i in range(x_test.shape[0]):
             self.x_test[i] = resize(x_test[i], image_size, anti_aliasing=True)
+        self.x_test = np.reshape(self.x_test, (x_test.shape[0], image_size[0] * image_size[1]))
         self.y_test = y_test
 
         self.batch_size = batch_size
