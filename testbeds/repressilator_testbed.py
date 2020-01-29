@@ -105,7 +105,7 @@ class Repressilator(TestBed):
         y_r = y_real[0:3]
         y_m = y_model[0:3]
         if y_r.shape[1] == y_m.shape[1]:
-            return np.mean(np.sum(np.sqrt((y_r - y_m)**2), 0))
+            return np.mean(np.sqrt(np.sum((y_r - y_m)**2, 0)))
         else:
             return np.infty
 
