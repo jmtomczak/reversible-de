@@ -54,20 +54,24 @@ def plot_best(Fs, dataset_name, D=10, pop=500,
               num_epochs=None):
     # Fs are best Fs for proposals in the same order as proposal_types!
 
-    colors = ['#e6194B', '#ffe119', '#3cb44b', '#4363d8']
-    linestyles = ['-', '-', '-.', 'dotted']
-    labels = ['DE', 'DEx3', 'ADE', 'RevDE']
+    # colors = ['#e6194B', '#ffe119', '#3cb44b', '#4363d8']
+    # linestyles = ['-', '-', '-.', 'dotted']
+    # labels = ['DE', 'DEx3', 'ADE', 'RevDE']
+    colors = ['#ffe119', '#3cb44b', '#4363d8']
+    linestyles = ['-', '-.', 'dotted']
+    labels = ['DEx3', 'ADE', 'RevDE']
     iter = 0
 
     for proposal in proposal_types:
         F = Fs[iter]
 
-        # dir_name = '../results/' + dataset_name + sp + 'D' + str(D) + sp + 'F' + sp + str(F) + sp + 'pop' + sp + str(pop)
-        # file_name = dataset_name + 'D' + str(D) + '.pkl'
+        dir_name = '../results/' + dataset_name + sp + 'D' + str(D) + sp + 'F' + sp + str(F) + sp + 'pop' + sp + str(pop)
+        file_name = dataset_name + 'D' + str(D) + '.pkl'
+
         # For Michaelis-Menten
-        dir_name = '../results/' + dataset_name + sp + 'F' + sp + str(F) + sp + 'pop' + sp + str(pop)
+        # dir_name = '../results/' + dataset_name + sp + 'F' + sp + str(F) + sp + 'pop' + sp + str(pop)
         # file_name = 'michaelis_menten' + '.pkl'
-        file_name = 'general_repressilator' + '.pkl'
+        # file_name = 'general_repressilator' + '.pkl'
 
         # load data
         file_to_load = dir_name + '/' + file_name
@@ -83,7 +87,7 @@ def plot_best(Fs, dataset_name, D=10, pop=500,
         iter += 1
 
     plt.grid()
-    plt.xlabel('epochs')
+    plt.xlabel('generations')
     plt.ylabel('objective')
     plt.legend(loc=0)
     plt.savefig(save_dir_name + '/' + dataset_name + sp + 'D' + str(D) + sp + '_best.pdf')
@@ -103,12 +107,18 @@ if __name__ == '__main__':
     # Ds = [2]
     # pop = 50
 
-    # For Repressilator
-    datasets = ['GeneralRepressilator']
-    Ds = [12]
-    pop = 50
+    # # For Repressilator
+    # datasets = ['GeneralRepressilator']
+    # Ds = [12]
+    # pop = 50
 
-    proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
+    # For Repressilator
+    datasets = ['mnist_nn']
+    Ds = [4120]
+    pop = 502
+
+    # proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
+    proposal_types = ['de_times_3', 'antisymmetric_differential', 'differential_3']
 
     for plotting in plottings:
         for data in datasets:
@@ -155,6 +165,10 @@ if __name__ == '__main__':
                         plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
                     elif data == 'GeneralRepressilator':
                         Fs = [1.5, 1.5, 1.5, 2.0]  # best
+                        plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
+                    elif data == 'mnist_nn':
+                        # Fs = [1.5, 2.0, 2.0, 2.7]  # best
+                        Fs = [2.0, 2.0, 2.7]  # best
                         plot_best(dataset_name=data, D=D, pop=pop, Fs=Fs, proposal_types=proposal_types)
                     else:
                         raise ValueError('Wrong data name!')

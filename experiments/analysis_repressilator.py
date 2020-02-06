@@ -55,8 +55,8 @@ if __name__ == '__main__':
     name = 'Repressilator'
     D = 4
     F = 1.5
-    de_proposal_type = 'antisymmetric_differential'
-    pop_size = 500
+    de_proposal_type = 'differential_3' #'antisymmetric_differential'
+    pop_size = 501
     num_epochs = 20
 
     rep = 0

@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     for F in Fs:
 
-        pop_size = 100
+        pop_size = 501
 
         num_epochs = 20
 

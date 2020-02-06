@@ -24,9 +24,11 @@ if __name__ == '__main__':
 
     # INIT: general hyperparams
     names = ['griewank', 'rastrigin', 'salomon', 'schwefel']
+    # names = ['schwefel']
 
     Ds = [10, 30, 100]
-    Fs = [1.0, 1.5, 2.0]
+    # Fs = [1.0, 1.5, 2.0]
+    Fs = [2.5]
 
     for name in names:
         for D in Ds:
@@ -56,7 +58,8 @@ if __name__ == '__main__':
                 # run experiments
                 num_repetitions = 10
 
-                proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
+                # proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
+                proposal_types = ['antisymmetric_differential', 'de_times_3']
 
                 results_dir = '../results/' + name + '_D' + str(D) + '_F_' + str(F) + '_pop_' + str(pop_size)
 

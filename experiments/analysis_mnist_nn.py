@@ -85,8 +85,9 @@ def ensemble(x_sol, f_sol, hidden_units, image_size, data_x, data_y, batch_size)
 
 if __name__ == '__main__':
 
-    F = 1.5
-    de_proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
+    F = 2.
+    # de_proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
+    de_proposal_types = ['differential_3']
 
     # EXPERIMENT SETUP
     name = 'mnist_nn'
@@ -95,18 +96,19 @@ if __name__ == '__main__':
 
     D = image_size[0] * image_size[1] * hidden_units + hidden_units * 10
 
-    bounds = [[-3.] * D, [3.] * D]
+    bounds = [[-2.] * D, [2.] * D]
 
-    pop_size = 500
+    pop_size = 502
 
     num_epochs = 500
 
     epsilon = np.infty
 
     # xavier init
-    xavier = np.asarray([np.sqrt(2. / (image_size[0] * image_size[1] + 20.))] * image_size[0] * image_size[1] * 20 + [
-        np.sqrt(2. / (20. + 10.))] * 20 * 10)
-    x0 = np.random.randn(pop_size, D) * xavier
+    # xavier = np.asarray([np.sqrt(2. / (image_size[0] * image_size[1] + 20.))] * image_size[0] * image_size[1] * 20 + [
+    #     np.sqrt(2. / (20. + 10.))] * 20 * 10)
+    # x0 = np.random.randn(pop_size, D) * xavier
+    x0 = np.random.randn(pop_size, D) * 0.01
 
     params = {}
 
@@ -148,19 +150,32 @@ if __name__ == '__main__':
                 params['pop_size']) + '-epochs-' + str(num_epochs)
             directory_name = results_dir + '/' + lf_poplife.name + specific_folder + '-r' + str(rep)
 
+            # x_sol_1 = np.load(directory_name + '/' + 'last_x.npy')
+            # x_sol_2 = np.load(directory_name + '/' + 'solutions.npy')
+
+            # x_sol = np.concatenate((x_sol_1, x_sol_2), 0)
+
             x_sol = np.load(directory_name + '/' + 'solutions.npy')
 
             # EVALUATE ON TRAINSET
             revpoplife.params['evaluate'] = False
             f_sol = revpoplife.evaluate_objective(x_sol)
 
-            revpoplife.params['evaluate'] = True
+            # x_sol = x_sol[x_sol.shape[0] - 5:x_sol.shape[0],:]
+            # f_sol = f_sol[x_sol.shape[0] - 5:x_sol.shape[0]]
+            indx = np.argsort(f_sol)
+            x_sol = x_sol[indx]
+            f_sol = f_sol[indx]
+            print(f_sol[0])
 
-            x_sol = x_sol[x_sol.shape[0] - 5:x_sol.shape[0],:]
-            f_sol = f_sol[x_sol.shape[0] - 5:x_sol.shape[0]]
+            revpoplife.params['evaluate'] = True
+            # print(x_sol.shape)
+            # print(revpoplife.objective_function(x_sol[[0]]))
+            x_sol = x_sol[[0]]
 
             ens_err = bagging(x_sol, hidden_units, image_size, b_fun.x_test, b_fun.y_test, batch_size=1000)
             # ens_err = ensemble(x_sol, f_sol, hidden_units, image_size, b_fun.x_test, b_fun.y_test, batch_size=1000)
+            print(ens_err)
 
             score.append(ens_err)
 
