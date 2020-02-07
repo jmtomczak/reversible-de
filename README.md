@@ -23,3 +23,5 @@ Please cite our paper if you use this code in your research:
   year={2020}
 }
 ```
+## Acknowledgments
+EW-T is financed by a grant within Mobilnosc Plus V from the Polish Ministry of Science and Higher Education (Grant No. 1639/MOB/V/2017/0).
