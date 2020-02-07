@@ -11,12 +11,11 @@ import matplotlib.pyplot as plt
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
-# PYTHONPATH = '/home/jakub/Dev/github/life/experiments'  # ripper5
-PYTHONPATH = '/Users/jmt/Dev/github/life/experiments'  #mac
+PYTHONPATH = '/Users/jmt/Dev/github/life/experiments'
 
 sys.path.append(os.path.dirname(os.path.expanduser(PYTHONPATH)))
 
-from optimization.population_algorithm import LikelihoodFreeInference, ReversiblePopLiFe
+from algorithms.population_algorithm import OptimizationAlgorithm, DifferentialEvolution
 
 from testbeds.repressilator_testbed import Repressilator
 
@@ -25,57 +24,49 @@ if __name__ == '__main__':
 
     # INIT: general hyperparams
     D = 4
-    Fs = [1.5]
+    Fs = [0.125, 0.25, 0.375, 0.5, 0.6, 0.625, 0.675, 0.75]
 
     for F in Fs:
 
-        pop_size = 501
+        pop_size = 20
 
-        num_epochs = 20
+        num_generations = 20
 
-        epsilon = np.infty
-
-        # run experiments
         num_repetitions = 10
 
-        proposal_types = ['differential_1', 'de_times_3', 'antisymmetric_differential', 'differential_3']
+        de_types = ['dex3', 'ade', 'revde']
 
         results_dir = '../results/Repressilator_F_' + str(F) + '_pop_' + str(pop_size)
 
         final_results = {}
 
-        for de_proposal_type in proposal_types:
-            print(f"------- Now runs: {de_proposal_type} -------")
+        for de_type in de_types:
+            print(f"------- Now runs: {de_type} -------")
             for rep in range(num_repetitions):
                 print(f"\t-> repetition {rep}")
 
                 np.random.seed(seed=rep)
 
-                # Michaelis-Menten experiment
                 r = Repressilator()
                 y_real, params = r.create_data(pop_size=pop_size)
                 objective = r.objective
 
                 params['evaluate_objective_type'] = 'single'
-
                 params['pop_size'] = pop_size
-                params['gaussian_prob'] = .0
-                params['mixing_prob'] = 0.0
-                params['num_cutting_points'] = 0
                 params['CR'] = 0.9
                 params['F'] = F
-                params['randomized_F'] = False
 
-                revpoplife = ReversiblePopLiFe(objective, args=(params, y_real), x0=params['x0'], burn_in_phase=0, num_epochs=num_epochs,
-                                               bounds=(params['bounds'][0], params['bounds'][1]),
-                                               population_size=pop_size,
-                                               elitism=0.,
-                                               de_proposal_type=de_proposal_type)
+                de = DifferentialEvolution(objective,
+                                           args=(params, y_real),
+                                           x0=params['x0'],
+                                           bounds=(params['bounds'][0], params['bounds'][1]),
+                                           population_size=pop_size,
+                                           de_type=de_type)
 
-                lf_poplife = LikelihoodFreeInference(pop_algorithm=revpoplife, num_epochs=num_epochs)
+                opt_alg = OptimizationAlgorithm(pop_algorithm=de, num_epochs=num_generations)
 
-                specific_folder = '-' + de_proposal_type + '-F-' + str(params['F']) + '-pop_size-' + str(params['pop_size']) + '-epochs-' + str(num_epochs)
-                directory_name = results_dir + '/' + lf_poplife.name + specific_folder + '-r' + str(rep)
+                specific_folder = '-' + de_type + '-F-' + str(params['F']) + '-pop_size-' + str(params['pop_size']) + '-epochs-' + str(num_generations)
+                directory_name = results_dir + '/' + opt_alg.name + specific_folder + '-r' + str(rep)
 
                 if os.path.exists(directory_name):
                     directory_name = directory_name + str(datetime.now())
@@ -84,7 +75,7 @@ if __name__ == '__main__':
                 os.makedirs(directory_name)
 
                 tic = time.time()
-                res, f = lf_poplife.lf_inference(directory_name=directory_name, epsilon=epsilon, name='populations')
+                res, f = opt_alg.optimize(directory_name=directory_name)
                 toc = time.time()
 
                 # Plot of best results
@@ -106,20 +97,20 @@ if __name__ == '__main__':
                 else:
                     f_best_avg = np.concatenate((f_best_avg, np.load(dir + '/' + 'f_best.npy')), 0)
 
-            f_best_avg = np.reshape(f_best_avg, (num_repetitions, num_epochs+1))
+            f_best_avg = np.reshape(f_best_avg, (num_repetitions, num_generations + 1))
 
             # plotting
             x_epochs = np.arange(0, f_best_avg.shape[1])
             y_f = f_best_avg.mean(0)
             y_f_std = f_best_avg.std(0)
 
-            final_results[de_proposal_type + '_avg'] = y_f
-            final_results[de_proposal_type + '_std'] = y_f_std
+            final_results[de_type + '_avg'] = y_f
+            final_results[de_type + '_std'] = y_f_std
 
             plt.plot(x_epochs, y_f)
             plt.fill_between(x_epochs, y_f - y_f_std, y_f + y_f_std)
             plt.grid()
-            plt.savefig(results_dir + '/' + lf_poplife.name + de_proposal_type + '_best_f_avg.pdf')
+            plt.savefig(results_dir + '/' + opt_alg.name + de_type + '_best_f_avg.pdf')
             plt.close()
 
         # save final results (just in case!)
@@ -127,16 +118,16 @@ if __name__ == '__main__':
         pickle.dump(final_results, f)
         f.close()
 
-        colors = ['#e6194B', '#ffe119', '#3cb44b', '#4363d8']
-        linestyles = ['-', '-', '-.', 'dotted']
-        labels = ['DE', 'DEx3', 'ADE', 'RevDE']
+        colors = ['#ffe119', '#3cb44b', '#4363d8']
+        linestyles = ['-', '-.', 'dotted']
+        labels = ['DEx3', 'ADE', 'RevDE']
         lw = 3.
         iter = 0
-        for de_proposal_type in proposal_types:
-            plt.plot(x_epochs, final_results[de_proposal_type + '_avg'], colors[iter], ls=linestyles[iter], lw=lw,
+        for de_type in de_types:
+            plt.plot(x_epochs, final_results[de_type + '_avg'], colors[iter], ls=linestyles[iter], lw=lw,
                      label=labels[iter])
-            plt.fill_between(x_epochs, final_results[de_proposal_type + '_avg'] - final_results[de_proposal_type + '_std'],
-                             final_results[de_proposal_type + '_avg'] + final_results[de_proposal_type + '_std'],
+            plt.fill_between(x_epochs, final_results[de_type + '_avg'] - final_results[de_type + '_std'],
+                             final_results[de_type + '_avg'] + final_results[de_type + '_std'],
                              color=colors[iter], alpha=0.5)
 
             iter += 1

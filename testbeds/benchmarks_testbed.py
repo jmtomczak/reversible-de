@@ -3,6 +3,7 @@ import numpy as np
 from testbeds.testbed import TestBed
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 class BenchmarkFun(TestBed):
     def __init__(self, name='schwefel'):
         super().__init__()

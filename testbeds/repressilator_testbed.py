@@ -7,6 +7,7 @@ from json import load
 from testbeds.testbed import TestBed
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 class Repressilator(TestBed):
     def __init__(self):
         super().__init__()
@@ -82,24 +83,6 @@ class Repressilator(TestBed):
         return params
 
     @staticmethod
-    def smooth_data(args, t_points, P_real):
-        # linear function
-        def fun(x, a):
-            return a * x
-
-        # fitting
-        x = np.expand_dims(t_points, 1)
-        y = np.expand_dims(P_real, 1)
-        I = 0.0000001 * np.diag(np.ones(shape=(x.shape[1],)))
-
-        a = np.squeeze(np.dot(np.dot(np.linalg.pinv(np.dot(x.T, x) + I), x.T), y), 1)
-
-        # smoothed data
-        # P_fit = np.repeat( np.expand_dims(fun(t_points, a),0), args['N'], axis=0 )
-        P_fit = fun(t_points, a)
-        return P_fit
-
-    @staticmethod
     def loss(y_real, y_model):
         # we assume only m's are observed!
         y_r = y_real[0:3]
@@ -143,27 +126,3 @@ class Repressilator(TestBed):
 
         _, y_model = self.solve_repressilator(params)
         return self.loss(args[1], y_model)
-
-
-if __name__ == '__main__':
-
-    r = Repressilator()
-
-    y_real, params = r.create_data()
-
-    print(y_real.shape)
-    print(params)
-
-    import matplotlib.pyplot as plt
-
-    plt.plot(params['t_points'], y_real[0])
-    plt.plot(params['t_points'], y_real[1])
-    plt.plot(params['t_points'], y_real[2])
-    plt.show()
-    plt.close()
-
-    plt.plot(params['t_points'], y_real[3])
-    plt.plot(params['t_points'], y_real[4])
-    plt.plot(params['t_points'], y_real[5])
-    plt.show()
-    plt.close()
