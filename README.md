@@ -1,6 +1,6 @@
 # Differential Evolution with Reversible Linear Transformations
 This repository contains code required to reproduce experiments carried out in the following paper:
-* Jakub M. Tomczak, Ewelina Weglarz-Tomczak, Agoston E. Eiben, "Differential Evolution with Reversible Linear Transformations", [arXiv preprint](https://arxiv.org/abs/), 2020
+* Jakub M. Tomczak, Ewelina Weglarz-Tomczak, Agoston E. Eiben, "Differential Evolution with Reversible Linear Transformations", GECCO, 2020 [arXiv preprint](https://arxiv.org/abs/2002.02869)
 
 ## Requirements
 The code requires:
@@ -19,7 +19,7 @@ Please cite our paper if you use this code in your research:
 @article{tomczak2020differential,
   title={{Differential Evolution with Reversible Linear Transformations}},
   author={Tomczak, Jakub M and Weglarz-Tomczak, Ewelina and Eiben, Agoston E.},
-  journal={arXiv},
+  journal={GECCO},
   year={2020}
 }
 ```
