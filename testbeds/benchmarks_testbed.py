@@ -1,6 +1,6 @@
 import numpy as np
 
-from testbeds.testbed import TestBed
+from .testbed import TestBed
 
 
 # ----------------------------------------------------------------------------------------------------------------------

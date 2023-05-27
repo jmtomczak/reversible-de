@@ -15,9 +15,9 @@ PYTHONPATH = '/Users/jmt/Dev/github/life/experiments'
 
 sys.path.append(os.path.dirname(os.path.expanduser(PYTHONPATH)))
 
-from algorithms.population_algorithm import OptimizationAlgorithm, DifferentialEvolution
+from ..algorithms.population_algorithm import OptimizationAlgorithm, DifferentialEvolution
 
-from testbeds.mnist_testbed import MNIST
+from ..testbeds.mnist_testbed import MNIST
 
 if __name__ == '__main__':
 
