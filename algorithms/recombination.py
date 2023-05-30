@@ -1,5 +1,5 @@
 import numpy as np
-from utils.distributions import bernoulli
+from ..utils.distributions import bernoulli
 
 
 # ----------------------------------------------------------------------------------------------------------------------

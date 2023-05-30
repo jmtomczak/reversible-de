@@ -15,8 +15,8 @@ PYTHONPATH = '/Users/jmt/Dev/github/reversible-de/experiments'
 
 sys.path.append(os.path.dirname(os.path.expanduser(PYTHONPATH)))
 
-from algorithms.population_algorithm import OptimizationAlgorithm, DifferentialEvolution
-from testbeds.benchmarks_testbed import BenchmarkFun
+from ..algorithms.population_algorithm import OptimizationAlgorithm, DifferentialEvolution
+from ..testbeds.benchmarks_testbed import BenchmarkFun
 
 
 if __name__ == '__main__':

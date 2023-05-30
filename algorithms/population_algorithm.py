@@ -1,6 +1,6 @@
 import numpy as np
-from algorithms.recombination import DifferentialRecombination
-from algorithms.selections import SelectBest
+from ..algorithms.recombination import DifferentialRecombination
+from ..algorithms.selections import SelectBest
 
 
 # ----------------------------------------------------------------------------------------------------------------------

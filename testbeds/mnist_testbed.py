@@ -9,7 +9,7 @@ from scipy.special import softmax
 
 from skimage.transform import resize
 
-from testbeds.testbed import TestBed
+from .testbed import TestBed
 
 # ----------------------------------------------------------------------------------------------------------------------
 PYTHONPATH = '/Users/jmt/Dev/github/life'  #mac
